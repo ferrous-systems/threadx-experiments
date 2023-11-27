@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
 [package]
 authors = ["Jonathan Pallant <jonathan.pallant@ferrous-systems.com>"]
 edition = "2021"

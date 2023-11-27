@@ -1,3 +1,8 @@
+//! Build script for the Rust/ThreadX demo
+
+// SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 use std::{env, error::Error, fs, path::PathBuf};
 
 fn main() -> Result<(), Box<dyn Error>> {

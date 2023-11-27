@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
 [submodule "threadx"]
 	path = threadx
 	url = https://github.com/azure-rtos/threadx.git

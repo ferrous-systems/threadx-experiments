@@ -6,6 +6,7 @@
 @/*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
 @/*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
 @/*       and in the root directory of this software.                      */
+@/*       SPDX-License-Identifier: LicenseRef-Azure                        */
 @/*                                                                        */
 @/**************************************************************************/
 @

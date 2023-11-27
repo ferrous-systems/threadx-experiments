@@ -1,2 +1,5 @@
+// SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 target
 .vscode/.cortex-debug.registers.state.json

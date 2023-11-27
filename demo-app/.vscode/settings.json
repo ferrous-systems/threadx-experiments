@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 {
     // override the default setting (`cargo check --all-targets`) which produces the following error
     // "can't find crate for `test`" when the default compilation target is a no_std target
