@@ -1,0 +1,12 @@
+[target.thumbv7em-none-eabihf]
+runner = "probe-rs run --chip nRF52840_xxAA"
+rustflags = [
+  "-C", "link-arg=-Tlink.x", # use the cortex-m-rt linker script
+  "-C", "linker=flip-link", # adds stack overflow protection
+  "-C", "link-arg=-Tdefmt.x", # defmt support
+  "-C", "link-arg=--nmagic", # fix page alignment
+]
+
+[build]
+# cross-compile to this target
+target = "thumbv7em-none-eabihf" # = ARM Cortex-M4 with FPU
