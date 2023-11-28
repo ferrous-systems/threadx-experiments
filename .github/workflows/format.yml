@@ -1,0 +1,18 @@
+# Copyright (c) 2023 Ferrous Systems
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+# Builds ThreadX and then our Rust program
+
+name: workflow-code-format
+run-name: Check code formatting
+on: [push]
+jobs:
+  job-format-demo-app:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout repo
+          uses: actions/checkout@v4
+        - name: Check Formatting
+          run: |
+            cd demo-app
+            cargo fmt -- --check
