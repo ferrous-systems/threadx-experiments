@@ -31,6 +31,8 @@ static mut BYTE_POOL: MaybeUninit<TxBytePool> = MaybeUninit::uninit();
 
 static mut BYTE_POOL_STORAGE: MaybeUninit<[u8; 32768]> = MaybeUninit::uninit();
 
+static BUILD_SLUG: Option<&str> = option_env!("BUILD_SLUG");
+
 type TxThreadFunc = extern "C" fn(entry_input: core::ffi::c_ulong);
 
 extern "C" {
@@ -139,7 +141,10 @@ extern "C" fn my_thread(value: u32) {
 
 #[entry]
 fn main() -> ! {
-    defmt::println!("Hello!");
+    defmt::println!(
+        "Hello, this is version {}!",
+        BUILD_SLUG.unwrap_or("unknown")
+    );
 
     let pp = nrf52840_hal::pac::Peripherals::take().unwrap();
 

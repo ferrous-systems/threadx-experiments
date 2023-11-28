@@ -44,6 +44,11 @@ jobs:
       - name: Add rustup target
         run: |
           rustup target add thumbv7em-none-eabi
+      - name: Find slug name
+        run: |
+          slug=$(./describe.sh "${GITHUB_REF}")
+          echo "Building with slug '${slug}'"
+          echo "BUILD_SLUG=${slug}" >> "${GITHUB_ENV}"
       - name: Check Demo App
         run: |
           cd demo-app
