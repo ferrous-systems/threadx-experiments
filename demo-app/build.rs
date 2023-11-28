@@ -7,6 +7,7 @@ use std::{env, error::Error, fs, path::PathBuf};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
+    let crate_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR")?);
 
     // put memory layout (linker script) in the linker search path
     fs::copy("memory.x", out_dir.join("memory.x"))?;
@@ -15,7 +16,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Include our ThreadX static library
     println!(
-        "cargo:rustc-link-search=/Users/jonathan/Documents/ferrous-systems/threadx/threadx/build"
+        "cargo:rustc-link-search={}",
+        crate_dir.join("../threadx/build").display()
     );
     println!("cargo:rustc-link-lib=static=threadx");
 
