@@ -1,0 +1,18 @@
+# Copyright (c) 2023 Ferrous Systems
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+name: workflow-code-licensing
+run-name: Check code licensing
+on: [push]
+jobs:
+  job-run-reuse-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Install tools
+        run: |
+          pipx install reuse
+      - name: Check Licensing
+        run: |
+          reuse lint
