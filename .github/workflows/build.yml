@@ -52,3 +52,9 @@ jobs:
         run: |
           cd demo-app
           cargo build --target=thumbv7em-none-eabi --release
+      - name: Upload demo-app
+        uses: actions/upload-artifact@master
+        with:
+          name: demo-app
+          path: demo-app/target/thumbv7em-none-eabi/release/demo-app
+  
