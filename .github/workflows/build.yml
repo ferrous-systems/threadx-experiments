@@ -29,9 +29,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: job-build-threadx-staticlib
     steps:
-      - name: Install tools
+      - name: Install Arm C compiler
         run: |
           sudo apt-get update -y && sudo apt-get -y install gcc-arm-none-eabi
+      - name: Install tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: flip-link@0.1.7
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
