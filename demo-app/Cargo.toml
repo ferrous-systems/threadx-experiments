@@ -17,6 +17,7 @@ heapless = "0.7"
 panic-probe = { version = "0.3", features = ["print-defmt"] }
 defmt = "0.3.5"
 defmt-rtt = "0.4"
+threadx-sys = { path = "../threadx-sys" }
 
 # optimize code in both profiles
 [profile.dev]

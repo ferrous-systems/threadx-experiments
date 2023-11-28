@@ -66,3 +66,18 @@ jobs:
         with:
           name: demo-app
           path: demo-app/target/thumbv7em-none-eabi/release/demo-app
+  job-build-threadx-sys:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - name: Check threadx-sys
+        run: |
+          cd threadx-sys
+          cargo check
+      - name: Build threadx-sys
+        run: |
+          cd threadx-sys
+          cargo build

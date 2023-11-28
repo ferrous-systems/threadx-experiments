@@ -6,11 +6,22 @@ run-name: Check code formatting
 on: [push]
 jobs:
   job-format-demo-app:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout repo
-          uses: actions/checkout@v4
-        - name: Check Formatting
-          run: |
-            cd demo-app
-            cargo fmt -- --check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Check Formatting
+        run: |
+          cd demo-app
+          cargo fmt -- --check
+  job-format-threadx-sys:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - name: Check Formatting
+        run: |
+          cd threadx-sys
+          cargo fmt -- --check
