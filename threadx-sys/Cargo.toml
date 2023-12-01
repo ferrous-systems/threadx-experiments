@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[package]
+name = "threadx-sys"
+version = "0.1.0"
+edition = "2021"
+authors = ["Jonathan Pallant <jonathan.pallant@ferrous-systems.com>"]
+license-file = "../LICENCES/LicenseRef-Azure.txt"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.69.1"
