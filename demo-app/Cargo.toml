@@ -19,6 +19,7 @@ defmt = "0.3.5"
 defmt-rtt = "0.4"
 threadx-sys = { path = "../threadx-sys" }
 byte-strings = "0.3.1"
+static_cell = "2.0.0"
 
 # optimize code in both profiles
 [profile.dev]

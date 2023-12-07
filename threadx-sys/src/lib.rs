@@ -58,3 +58,6 @@ pub const TX_NO_SUSPENSIONS: UINT = 0;
 pub const TX_NO_MESSAGES: UINT = 0;
 pub const TX_EMPTY: ULONG = 0;
 pub const TX_CLEAR_ID: ULONG = 0;
+
+/// Operation completed successfully
+pub const TX_SUCCESS: UINT = 0;
