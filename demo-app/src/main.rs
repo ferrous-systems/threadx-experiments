@@ -6,8 +6,9 @@
 #![no_main]
 #![no_std]
 
-use core::{ffi::CStr, mem::MaybeUninit};
+use core::mem::MaybeUninit;
 
+use byte_strings::c;
 use cortex_m_rt::entry;
 use defmt_rtt as _;
 use nrf52840_hal::prelude::OutputPin;
@@ -20,11 +21,8 @@ const DEMO_STACK_SIZE: usize = 1024;
 #[no_mangle]
 extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void) {
     static mut THREAD0: MaybeUninit<threadx_sys::TX_THREAD> = MaybeUninit::uninit();
-    const THREAD0_NAME: &CStr = unsafe { CStr::from_bytes_with_nul_unchecked(b"thread0\0") };
     static mut THREAD1: MaybeUninit<threadx_sys::TX_THREAD> = MaybeUninit::uninit();
-    const THREAD1_NAME: &CStr = unsafe { CStr::from_bytes_with_nul_unchecked(b"thread1\0") };
     static mut BYTE_POOL: MaybeUninit<threadx_sys::TX_BYTE_POOL> = MaybeUninit::uninit();
-    const BYTE_POOL_NAME: &CStr = unsafe { CStr::from_bytes_with_nul_unchecked(b"byte-pool0\0") };
     static mut BYTE_POOL_STORAGE: MaybeUninit<[u8; 32768]> = MaybeUninit::uninit();
 
     defmt::println!("In tx_application_define()...");
@@ -34,7 +32,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
     unsafe {
         threadx_sys::_tx_byte_pool_create(
             BYTE_POOL.as_mut_ptr(),
-            BYTE_POOL_NAME.as_ptr() as *mut threadx_sys::CHAR,
+            c!("byte-pool0").as_ptr() as *mut threadx_sys::CHAR,
             BYTE_POOL_STORAGE.as_mut_ptr() as *mut _,
             core::mem::size_of_val(&BYTE_POOL_STORAGE) as u32,
         );
@@ -48,7 +46,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         defmt::println!("Stack allocated @ {:08x}", pointer);
         threadx_sys::_tx_thread_create(
             THREAD0.as_mut_ptr(),
-            THREAD0_NAME.as_ptr() as *mut threadx_sys::CHAR,
+            c!("thread0").as_ptr() as *mut threadx_sys::CHAR,
             Some(my_thread),
             0x12345678,
             pointer,
@@ -70,7 +68,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         defmt::println!("Stack allocated @ {:08x}", pointer);
         threadx_sys::_tx_thread_create(
             THREAD1.as_mut_ptr(),
-            THREAD1_NAME.as_ptr() as *mut threadx_sys::CHAR,
+            c!("thread1").as_ptr() as *mut threadx_sys::CHAR,
             Some(my_thread),
             0xAABBCCDD,
             pointer,
