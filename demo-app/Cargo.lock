@@ -83,6 +83,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "327762f6e5a765692301e5bb513e0d9fef63be86bbc14528052b1cd3e6f03e07"
 
 [[package]]
+name = "byte-strings"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "002ee5531feb8450e59862fefa550eeac39b726d60b186071672751045ebc29a"
+dependencies = [
+ "byte-strings-proc_macros",
+]
+
+[[package]]
+name = "byte-strings-proc_macros"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "62f7e0e71f98d6c71bfe42b0a7a47d0f870ad808401fad2d44fa156ed5b0ae03"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.37",
+]
+
+[[package]]
 name = "bytemuck"
 version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -226,6 +246,7 @@ dependencies = [
 name = "demo-app"
 version = "0.0.0"
 dependencies = [
+ "byte-strings",
  "cc",
  "cortex-m",
  "cortex-m-rt",
