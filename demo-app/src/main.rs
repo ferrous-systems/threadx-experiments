@@ -6,13 +6,12 @@
 #![no_main]
 #![no_std]
 
-use core::mem::MaybeUninit;
-
 use byte_strings::c;
 use cortex_m_rt::entry;
 use defmt_rtt as _;
 use nrf52840_hal::prelude::OutputPin;
 use panic_probe as _;
+use static_cell::StaticCell;
 
 static BUILD_SLUG: Option<&str> = option_env!("BUILD_SLUG");
 
@@ -20,66 +19,113 @@ const DEMO_STACK_SIZE: usize = 1024;
 
 #[no_mangle]
 extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void) {
-    static mut THREAD0: MaybeUninit<threadx_sys::TX_THREAD> = MaybeUninit::uninit();
-    static mut THREAD1: MaybeUninit<threadx_sys::TX_THREAD> = MaybeUninit::uninit();
-    static mut BYTE_POOL: MaybeUninit<threadx_sys::TX_BYTE_POOL> = MaybeUninit::uninit();
-    static mut BYTE_POOL_STORAGE: MaybeUninit<[u8; 32768]> = MaybeUninit::uninit();
-
     defmt::println!("In tx_application_define()...");
+
     // ThreadX requires a non-const pointer to char for the names, which it
     // wil hold on to in the object, so it must have static lifetime. So we
     // cast-away-const on a static string slice to appease the API.
-    unsafe {
-        threadx_sys::_tx_byte_pool_create(
-            BYTE_POOL.as_mut_ptr(),
-            c!("byte-pool0").as_ptr() as *mut threadx_sys::CHAR,
-            BYTE_POOL_STORAGE.as_mut_ptr() as *mut _,
-            core::mem::size_of_val(&BYTE_POOL_STORAGE) as u32,
-        );
-        let mut pointer = core::ptr::null_mut();
-        threadx_sys::_tx_byte_allocate(
-            BYTE_POOL.as_mut_ptr(),
-            &mut pointer,
-            DEMO_STACK_SIZE as _,
-            threadx_sys::TX_NO_WAIT,
-        );
-        defmt::println!("Stack allocated @ {:08x}", pointer);
-        threadx_sys::_tx_thread_create(
-            THREAD0.as_mut_ptr(),
-            c!("thread0").as_ptr() as *mut threadx_sys::CHAR,
-            Some(my_thread),
-            0x12345678,
-            pointer,
-            DEMO_STACK_SIZE as _,
-            1,
-            1,
-            threadx_sys::TX_NO_TIME_SLICE,
-            threadx_sys::TX_AUTO_START,
-        );
-        defmt::println!("Thread spawned ({:08x})", 0x12345678);
 
-        let mut pointer = core::ptr::null_mut();
-        threadx_sys::_tx_byte_allocate(
-            BYTE_POOL.as_mut_ptr(),
-            &mut pointer,
-            DEMO_STACK_SIZE as _,
-            threadx_sys::TX_NO_WAIT,
-        );
-        defmt::println!("Stack allocated @ {:08x}", pointer);
-        threadx_sys::_tx_thread_create(
-            THREAD1.as_mut_ptr(),
-            c!("thread1").as_ptr() as *mut threadx_sys::CHAR,
-            Some(my_thread),
-            0xAABBCCDD,
-            pointer,
-            DEMO_STACK_SIZE as _,
-            1,
-            1,
-            threadx_sys::TX_NO_TIME_SLICE,
-            threadx_sys::TX_AUTO_START,
-        );
-        defmt::println!("Thread spawned ({:08x})", 0xAABBCCDD);
-    }
+    let byte_pool = {
+        static BYTE_POOL: StaticCell<threadx_sys::TX_BYTE_POOL> = StaticCell::new();
+        static BYTE_POOL_STORAGE: StaticCell<[u8; 32768]> = StaticCell::new();
+        let byte_pool = BYTE_POOL.uninit();
+        let byte_pool_storage = BYTE_POOL_STORAGE.uninit();
+        unsafe {
+            threadx_sys::_tx_byte_pool_create(
+                byte_pool.as_mut_ptr(),
+                c!("byte-pool0").as_ptr() as *mut threadx_sys::CHAR,
+                byte_pool_storage.as_mut_ptr() as *mut _,
+                core::mem::size_of_val(&BYTE_POOL_STORAGE) as u32,
+            );
+            byte_pool.assume_init_mut()
+        }
+    };
+
+    let entry = 0x12345678;
+    let thread0 = {
+        let mut stack_pointer = core::ptr::null_mut();
+        unsafe {
+            threadx_sys::_tx_byte_allocate(
+                byte_pool,
+                &mut stack_pointer,
+                DEMO_STACK_SIZE as _,
+                threadx_sys::TX_NO_WAIT,
+            );
+        }
+        defmt::println!("Stack allocated @ {}", stack_pointer);
+        if stack_pointer.is_null() {
+            panic!("No space for stack");
+        }
+
+        static THREAD_STORAGE: StaticCell<threadx_sys::TX_THREAD> = StaticCell::new();
+        let thread = THREAD_STORAGE.uninit();
+        unsafe {
+            let res = threadx_sys::_tx_thread_create(
+                thread.as_mut_ptr(),
+                c!("thread0").as_ptr() as *mut threadx_sys::CHAR,
+                Some(my_thread),
+                entry,
+                stack_pointer,
+                DEMO_STACK_SIZE as _,
+                1,
+                1,
+                threadx_sys::TX_NO_TIME_SLICE,
+                threadx_sys::TX_AUTO_START,
+            );
+            if res != threadx_sys::TX_SUCCESS {
+                panic!("Failed to create thread: {}", res);
+            }
+            thread.assume_init_mut()
+        }
+    };
+    defmt::println!(
+        "Thread spawned (entry={:08x}) @ {}",
+        entry,
+        thread0 as *const _
+    );
+
+    let entry = 0xAABBCCDD;
+    let thread1 = {
+        let mut stack_pointer = core::ptr::null_mut();
+        unsafe {
+            threadx_sys::_tx_byte_allocate(
+                byte_pool,
+                &mut stack_pointer,
+                DEMO_STACK_SIZE as _,
+                threadx_sys::TX_NO_WAIT,
+            );
+        }
+        defmt::println!("Stack allocated @ {:08x}", stack_pointer);
+        if stack_pointer.is_null() {
+            panic!("No space for stack");
+        }
+
+        static THREAD_STORAGE: StaticCell<threadx_sys::TX_THREAD> = StaticCell::new();
+        let thread = THREAD_STORAGE.uninit();
+        unsafe {
+            let res = threadx_sys::_tx_thread_create(
+                thread.as_mut_ptr(),
+                c!("thread1").as_ptr() as *mut threadx_sys::CHAR,
+                Some(my_thread),
+                entry,
+                stack_pointer,
+                DEMO_STACK_SIZE as _,
+                1,
+                1,
+                threadx_sys::TX_NO_TIME_SLICE,
+                threadx_sys::TX_AUTO_START,
+            );
+            if res != threadx_sys::TX_SUCCESS {
+                panic!("Failed to create thread: {}", res);
+            }
+            thread.assume_init_mut()
+        }
+    };
+    defmt::println!(
+        "Thread spawned (entry={:08x}) @ {}",
+        entry,
+        thread1 as *const _
+    );
 }
 
 extern "C" fn my_thread(value: u32) {
