@@ -46,7 +46,6 @@ jobs:
         env: # Or as an environment variable
           CRITICALUP_TOKEN: ${{ secrets.CRITICALUP_TOKEN }}
         run: |
-          echo ${CRITICALUP_TOKEN} | criticalup auth set
           criticalup install
           echo "$HOME/.local/share/criticalup/bin" >> $GITHUB_PATH
       - name: Find slug name
