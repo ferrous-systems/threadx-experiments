@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Ferrous Systems
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-name: workflow-build-everything
+name: workflow-build-everything-ferrocene
 run-name: Build Everything with Ferrocene
 on: [push]
 jobs:
