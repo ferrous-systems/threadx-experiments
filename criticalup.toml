@@ -1,0 +1,19 @@
+# Copyright (c) 2024 Ferrous Systems
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+manifest-version = 1
+
+[products.ferrocene]
+release = "pre-rolling-2024-05-24"
+packages = [
+    "rustc-${rustc-host}",
+    "rust-std-${rustc-host}",
+    "cargo-${rustc-host}",
+    "clippy-${rustc-host}",
+    "rustfmt-${rustc-host}",
+    "rust-analyzer-${rustc-host}",
+    "ferrocene-self-test-${rustc-host}",
+    "flip-link-${rustc-host}",
+    "llvm-tools-${rustc-host}",
+    "rust-std-thumbv7em-none-eabi",
+]
