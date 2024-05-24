@@ -1,3 +1,6 @@
+# Copyright (c) 2024 Ferrous Systems
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
 manifest-version = 1
 
 [products.ferrocene]
