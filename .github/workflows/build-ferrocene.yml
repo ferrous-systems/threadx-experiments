@@ -27,13 +27,13 @@ jobs:
           slug=$(./describe.sh "${GITHUB_REF}")
           echo "Building with slug '${slug}'"
           echo "BUILD_SLUG=${slug}" >> "${GITHUB_ENV}"
-      - name: Check Demo App
+      - name: Check nRF52 App
         run: |
           cd nrf52-app
           rustc --version
           cargo --version
           cargo check --target=thumbv7em-none-eabi
-      - name: Build Demo App
+      - name: Build nRF52 App
         run: |
           cd nrf52-app
           rustc --version
@@ -44,6 +44,45 @@ jobs:
         with:
           name: nrf52-app
           path: nrf52-app/target/thumbv7em-none-eabi/release/nrf52-app
+  job-build-qemu-cortex-r5-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Arm C compiler
+        run: |
+          sudo apt-get update -y && sudo apt-get -y install gcc-arm-none-eabi
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/ferrocene/criticalup/releases/download/v1.0.1/criticalup-installer.sh | sh
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - name: Install Ferrocene
+        env:
+          CRITICALUP_TOKEN: ${{ secrets.CRITICALUP_TOKEN }}
+        run: |
+          criticalup install
+          echo "$HOME/.local/share/criticalup/bin" >> $GITHUB_PATH
+      - name: Find slug name
+        run: |
+          slug=$(./describe.sh "${GITHUB_REF}")
+          echo "Building with slug '${slug}'"
+          echo "BUILD_SLUG=${slug}" >> "${GITHUB_ENV}"
+      - name: Check QEMU Cortex-R5 App
+        run: |
+          cd qemu-cortex-r5-app
+          rustc --version
+          cargo --version
+          cargo check --target=armv7r-none-eabihf
+      - name: Build QEMU Cortex-R5 App
+        run: |
+          cd qemu-cortex-r5-app
+          rustc --version
+          cargo --version
+          cargo build --target=armv7r-none-eabihf --release
+      - name: Upload QEMU Cortex-R5 App
+        uses: actions/upload-artifact@master
+        with:
+          name: qemu-cortex-r5-app
+          path: qemu-cortex-r5-app/target/armv7r-none-eabihf/release/qemu-cortex-r5-app
   job-build-threadx-sys:
     runs-on: ubuntu-latest
     steps:

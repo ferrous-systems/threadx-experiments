@@ -1,0 +1,9 @@
+[target.armv7r-none-eabihf]
+rustflags = [
+    "-Clink-arg=-Tlinker.ld",
+    "-Ctarget-cpu=cortex-r5",
+]
+runner = "qemu-system-arm -machine versatileab -cpu cortex-r5f -semihosting -nographic -kernel"
+
+[build]
+target = ["armv7r-none-eabihf"]

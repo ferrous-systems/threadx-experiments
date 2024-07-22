@@ -10,9 +10,18 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      - name: Check Formatting
+      - name: Check Formatting on nRF52 App
         run: |
           cd nrf52-app
+          cargo fmt -- --check
+  job-format-qemu-cortex-r5-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Check Formatting on QEMU Cortex-R5 App
+        run: |
+          cd qemu-cortex-r5-app
           cargo fmt -- --check
   job-format-threadx-sys:
     runs-on: ubuntu-latest

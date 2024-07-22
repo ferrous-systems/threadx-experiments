@@ -10,3 +10,7 @@ set -euo pipefail
 pushd nrf52-app
 cargo build --release
 popd
+
+pushd qemu-cortex-r5-app
+cargo build --release
+popd

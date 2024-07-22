@@ -1,0 +1,30 @@
+MEMORY {
+    RAM : ORIGIN = 0, LENGTH = 0x1000000
+}
+
+ENTRY(_start)
+SECTIONS {
+    .startup ORIGIN(RAM) : {
+        *(.text.startup)
+    } > RAM
+    .text : { *(.text .text*) } > RAM
+    .rodata : { *(.rodata .rodata*) } > RAM
+    .data : { *(.data .data*) } > RAM
+    .bss : { *(.bss .bss* COMMON) } > RAM
+    /DISCARD/ : {
+        *(.note .note*)
+    }
+
+    . = ALIGN(16);
+    .stack : {
+        _stack_bottom = ABSOLUTE(.) ;
+        /* Allocate room for stack. This must be big enough for the IRQ, FIQ, and 
+        SYS stack if nested interrupts are enabled.  */
+        .   =  ALIGN(8) ;
+        .   += 0x10000;
+        _sp =  . - 16 ;
+        _stack_top = ABSOLUTE(.) ;
+    } > RAM
+
+  _end = .; __end__ = . ;
+}
