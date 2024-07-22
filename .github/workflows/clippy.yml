@@ -5,7 +5,7 @@ name: workflow-code-analysis
 run-name: Run code analysis
 on: [push]
 jobs:
-  job-clippy-demo-app:
+  job-clippy-nrf52-app:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -22,7 +22,7 @@ jobs:
         env:
           RUSTFLAGS: "-Dwarnings"
         run: |
-          cd demo-app
+          cd nrf52-app
           cargo clippy --all-features
   job-clippy-threadx-sys:
     runs-on: ubuntu-latest

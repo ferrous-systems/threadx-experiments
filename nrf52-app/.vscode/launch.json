@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 {
-  // Use `nc localhost 8765 | defmt-print -e ./target/thumbv7em-none-eabihf/release/demo-app` to print the defmt output
+  // Use `nc localhost 8765 | defmt-print -e ./target/thumbv7em-none-eabihf/release/nrf52-app` to print the defmt output
   "version": "0.2.0",
   "configurations": [
     {
       "cwd": "${workspaceRoot}",
-      "executable": "./target/thumbv7em-none-eabihf/release/demo-app",
+      "executable": "./target/thumbv7em-none-eabihf/release/nrf52-app",
       "name": "Debug Microcontroller (launch)",
       "request": "launch",
       "preLaunchTask": "rust: cargo build release",

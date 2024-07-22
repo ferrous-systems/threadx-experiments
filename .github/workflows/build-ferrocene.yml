@@ -5,7 +5,7 @@ name: workflow-build-everything-ferrocene
 run-name: Build Everything with Ferrocene
 on: [push]
 jobs:
-  job-build-demo-app:
+  job-build-nrf52-app:
     runs-on: ubuntu-latest
     steps:
       - name: Install Arm C compiler
@@ -29,21 +29,21 @@ jobs:
           echo "BUILD_SLUG=${slug}" >> "${GITHUB_ENV}"
       - name: Check Demo App
         run: |
-          cd demo-app
+          cd nrf52-app
           rustc --version
           cargo --version
           cargo check --target=thumbv7em-none-eabi
       - name: Build Demo App
         run: |
-          cd demo-app
+          cd nrf52-app
           rustc --version
           cargo --version
           cargo build --target=thumbv7em-none-eabi --release
-      - name: Upload demo-app
+      - name: Upload nrf52-app
         uses: actions/upload-artifact@master
         with:
-          name: demo-app
-          path: demo-app/target/thumbv7em-none-eabi/release/demo-app
+          name: nrf52-app
+          path: nrf52-app/target/thumbv7em-none-eabi/release/nrf52-app
   job-build-threadx-sys:
     runs-on: ubuntu-latest
     steps:

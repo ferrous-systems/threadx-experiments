@@ -5,14 +5,14 @@ name: workflow-code-format
 run-name: Check code formatting
 on: [push]
 jobs:
-  job-format-demo-app:
+  job-format-nrf52-app:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Check Formatting
         run: |
-          cd demo-app
+          cd nrf52-app
           cargo fmt -- --check
   job-format-threadx-sys:
     runs-on: ubuntu-latest

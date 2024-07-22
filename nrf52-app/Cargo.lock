@@ -243,23 +243,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "demo-app"
-version = "0.0.0"
-dependencies = [
- "byte-strings",
- "cc",
- "cortex-m",
- "cortex-m-rt",
- "defmt",
- "defmt-rtt",
- "heapless",
- "nrf52840-hal",
- "panic-probe",
- "static_cell",
- "threadx-sys",
-]
-
-[[package]]
 name = "either"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -476,6 +459,23 @@ dependencies = [
  "critical-section",
  "usb-device",
  "vcell",
+]
+
+[[package]]
+name = "nrf52-app"
+version = "0.0.0"
+dependencies = [
+ "byte-strings",
+ "cc",
+ "cortex-m",
+ "cortex-m-rt",
+ "defmt",
+ "defmt-rtt",
+ "heapless",
+ "nrf52840-hal",
+ "panic-probe",
+ "static_cell",
+ "threadx-sys",
 ]
 
 [[package]]
