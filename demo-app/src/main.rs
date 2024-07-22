@@ -15,7 +15,11 @@ use static_cell::StaticCell;
 
 static BUILD_SLUG: Option<&str> = option_env!("BUILD_SLUG");
 
-const DEMO_STACK_SIZE: usize = 1024;
+const DEMO_STACK_SIZE: usize = 8192;
+const DEMO_POOL_SIZE: usize = (DEMO_STACK_SIZE * 2) + 16384;
+
+const SYSTEM_CLOCK: u32 = 64_000_000;
+const SYSTICK_CYCLES: u32 = (SYSTEM_CLOCK / 100) - 1;
 
 #[no_mangle]
 extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void) {
@@ -27,7 +31,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
 
     let byte_pool = {
         static BYTE_POOL: StaticCell<threadx_sys::TX_BYTE_POOL> = StaticCell::new();
-        static BYTE_POOL_STORAGE: StaticCell<[u8; 32768]> = StaticCell::new();
+        static BYTE_POOL_STORAGE: StaticCell<[u8; DEMO_POOL_SIZE]> = StaticCell::new();
         let byte_pool = BYTE_POOL.uninit();
         let byte_pool_storage = BYTE_POOL_STORAGE.uninit();
         unsafe {
@@ -35,7 +39,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
                 byte_pool.as_mut_ptr(),
                 c!("byte-pool0").as_ptr() as *mut threadx_sys::CHAR,
                 byte_pool_storage.as_mut_ptr() as *mut _,
-                core::mem::size_of_val(&BYTE_POOL_STORAGE) as u32,
+                DEMO_POOL_SIZE as u32,
             );
             byte_pool.assume_init_mut()
         }
@@ -150,6 +154,7 @@ fn main() -> ! {
     );
 
     let pp = nrf52840_hal::pac::Peripherals::take().unwrap();
+    let mut cp = cortex_m::Peripherals::take().unwrap();
 
     let clocks = nrf52840_hal::Clocks::new(pp.CLOCK);
     let clocks = clocks.enable_ext_hfosc();
@@ -166,6 +171,18 @@ fn main() -> ! {
 
     let _ = led.set_low();
 
+    // Enable cycle counter
+    cp.DCB.enable_trace();
+    cp.DWT.enable_cycle_counter();
+
+    // Enable the systick
+    cp.SYST.set_reload(SYSTICK_CYCLES);
+    cp.SYST.clear_current();
+    cp.SYST.enable_interrupt();
+    cp.SYST
+        .set_clock_source(cortex_m::peripheral::syst::SystClkSource::Core);
+    cp.SYST.enable_counter();
+
     defmt::println!("Entering ThreadX kernel...");
     unsafe {
         threadx_sys::_tx_initialize_kernel_enter();
@@ -179,4 +196,14 @@ fn main() -> ! {
 #[defmt::panic_handler]
 fn panic() -> ! {
     cortex_m::asm::udf()
+}
+
+#[no_mangle]
+unsafe extern "C" fn __tx_SysTickHandler() {
+    extern "C" {
+        fn _tx_timer_interrupt();
+    }
+    // Call into OS function (not in public API)
+    _tx_timer_interrupt();
+    // Can do any extra work here
 }
