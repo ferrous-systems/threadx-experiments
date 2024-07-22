@@ -11,7 +11,7 @@ jobs:
       - name: Install Arm C compiler
         run: |
           sudo apt-get update -y && sudo apt-get -y install gcc-arm-none-eabi
-          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/ferrocene/criticalup/releases/download/v1.0.0-prerelease.1/criticalup-installer.sh | sh
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/ferrocene/criticalup/releases/download/v1.0.1/criticalup-installer.sh | sh
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
