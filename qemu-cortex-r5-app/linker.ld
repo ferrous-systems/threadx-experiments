@@ -1,3 +1,10 @@
+/*
+ * Linker script for running ThreadX/Rust on QEMU's Versatile AB with a Cortex-R5
+ *
+ * SPDX-FileCopyrightText: Copyright (c) 2024 Ferrous Systems
+ * SPDX-License-Identifier: MIT OR Apache-2.0
+*/
+
 MEMORY {
     RAM : ORIGIN = 0, LENGTH = 0x1000000
 }

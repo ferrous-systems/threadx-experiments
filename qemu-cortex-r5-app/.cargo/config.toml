@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2024 Ferrous Systems
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
 [target.armv7r-none-eabihf]
 rustflags = [
     "-Clink-arg=-Tlinker.ld",

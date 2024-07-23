@@ -1,8 +1,7 @@
 //! Code for the Arm PL011 Uart
-//!
-//! Written by Jonathan Pallant at Ferrous Systems
-//!
-//! Copyright (c) Ferrous Systems, 2024
+
+// SPDX-FileCopyrightText: Copyright (c) 2024 Ferrous Systems
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 /// A driver for a virtual PL011 Uart
 ///

@@ -1,8 +1,7 @@
 //! Code for the Arm SP804 Timer
-//!
-//! Written by Jonathan Pallant at Ferrous Systems
-//!
-//! Copyright (c) Ferrous Systems, 2024
+
+// SPDX-FileCopyrightText: Copyright (c) 2024 Ferrous Systems
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 /// Supported timer modes
 pub enum Mode {
@@ -16,6 +15,7 @@ pub enum Interrupts {
     Enabled = 1 << 5,
 }
 
+/// Timer0 on an Arm Versatile Application Board.
 pub type Timer0 = Timer<0x101e_2000>;
 
 /// A driver for a virtual SP804 Timer
