@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: Copyright (c) 2024 Ferrous Systems
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[package]
+name = "qemu-cortex-r5-app"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ferrous Systems"]
+license = "MIT OR Apache-2.0"
+description = "A simple ARMv7-R demo application that runs ThreadX in QEMU and compiles with Ferrocene"
+
+[dependencies]
+embedded-alloc = "0.5.1"
+static_cell = "2.1.0"
+threadx-sys = { path = "../threadx-sys" }
+byte-strings = "0.3.1"
+
+[build-dependencies]
+cc = "1.1.6"
+
+[profile.release]
+codegen-units = 1
+debug = 2
+debug-assertions = true
+incremental = false
+lto = false
+opt-level = 1
+overflow-checks = true

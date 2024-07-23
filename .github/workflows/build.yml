@@ -5,7 +5,7 @@ name: workflow-build-everything
 run-name: Build Everything
 on: [push]
 jobs:
-  job-build-demo-app:
+  job-build-nrf52-app:
     runs-on: ubuntu-latest
     steps:
       - name: Install Arm C compiler
@@ -27,19 +27,50 @@ jobs:
           slug=$(./describe.sh "${GITHUB_REF}")
           echo "Building with slug '${slug}'"
           echo "BUILD_SLUG=${slug}" >> "${GITHUB_ENV}"
-      - name: Check Demo App
+      - name: Check nRF52 App
         run: |
-          cd demo-app
+          cd nrf52-app
           cargo check --target=thumbv7em-none-eabi
-      - name: Build Demo App
+      - name: Build nRF52 App
         run: |
-          cd demo-app
+          cd nrf52-app
           cargo build --target=thumbv7em-none-eabi --release
-      - name: Upload demo-app
+      - name: Upload nrf52-app
         uses: actions/upload-artifact@master
         with:
-          name: demo-app
-          path: demo-app/target/thumbv7em-none-eabi/release/demo-app
+          name: nrf52-app
+          path: nrf52-app/target/thumbv7em-none-eabi/release/nrf52-app
+  job-build-qemu-cortex-r5-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Arm C compiler
+        run: |
+          sudo apt-get update -y && sudo apt-get -y install gcc-arm-none-eabi
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - name: Add rustup target
+        run: |
+          rustup target add armv7r-none-eabihf
+      - name: Find slug name
+        run: |
+          slug=$(./describe.sh "${GITHUB_REF}")
+          echo "Building with slug '${slug}'"
+          echo "BUILD_SLUG=${slug}" >> "${GITHUB_ENV}"
+      - name: Check QEMU Cortex-R5 App
+        run: |
+          cd qemu-cortex-r5-app
+          cargo check --target=armv7r-none-eabihf
+      - name: Build QEMU Cortex-R5 App
+        run: |
+          cd qemu-cortex-r5-app
+          cargo build --target=armv7r-none-eabihf --release
+      - name: Upload qemu-cortex-r5-app
+        uses: actions/upload-artifact@master
+        with:
+          name: qemu-cortex-r5-app
+          path: qemu-cortex-r5-app/target/armv7r-none-eabihf/release/qemu-cortex-r5-app
   job-build-threadx-sys:
     runs-on: ubuntu-latest
     steps:
