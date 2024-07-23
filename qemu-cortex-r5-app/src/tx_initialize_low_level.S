@@ -232,11 +232,8 @@ __tx_irq_processing_return:
     BL      _tx_thread_irq_nesting_start
 #endif
 @
-@    /* For debug purpose, execute the timer interrupt processing here.  In
-@       a real system, some kind of status indication would have to be checked
-@       before the timer interrupt handler could be called.  */
-@
-    BL     _tx_timer_interrupt                  @ Timer interrupt handler
+    /* Use Rust to handle the interrupt */
+    BL     handle_interrupt
 @
 @
 @    /* If interrupt nesting was started earlier, the end of interrupt nesting

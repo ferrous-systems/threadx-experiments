@@ -1,4 +1,4 @@
-//! A driver the Arm PL011 Uart
+//! Code for the Arm PL011 Uart
 //!
 //! Written by Jonathan Pallant at Ferrous Systems
 //!

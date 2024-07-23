@@ -228,6 +228,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     cc::Build::new()
         .include(&tx_common_inc)
         .include(&tx_port_inc)
+        .flag("-g")
         .define("TX_ENABLE_VFP_SUPPORT", "1")
         .files(TX_PORT_FILES.iter().map(|&s| tx_port_dir.join(s)))
         .files(TX_COMMON_FILES.iter().map(|&s| tx_common_dir.join(s)))
@@ -236,6 +237,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     cc::Build::new()
         .include(&tx_common_inc)
         .include(&tx_port_inc)
+        .flag("-g")
         .file("src/tx_initialize_low_level.S")
         .compile("startup");
 

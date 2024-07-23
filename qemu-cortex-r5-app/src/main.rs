@@ -7,37 +7,58 @@
 #![no_main]
 
 use byte_strings::c;
-use core::{cell::RefCell, fmt::Write};
-use critical_section::Mutex;
-use qemu_cortex_r5_app::virt_uart::Uart;
+use core::{cell::UnsafeCell, fmt::Write as _, mem::MaybeUninit};
+use qemu_cortex_r5_app::{
+    pl011_uart::Uart,
+    pl190_vic,
+    sp804_timer::{self, Timer0},
+};
 use static_cell::StaticCell;
 
 static BUILD_SLUG: Option<&str> = option_env!("BUILD_SLUG");
 
-const DEMO_STACK_SIZE: usize = 1024;
+const DEMO_STACK_SIZE: usize = 16384;
+const DEMO_POOL_SIZE: usize = (DEMO_STACK_SIZE * 2) + 16384;
 
 static UART: GlobalUart = GlobalUart::new();
 
+unsafe impl Sync for GlobalUart {}
+
 struct GlobalUart {
-    inner: Mutex<RefCell<Option<Uart<0x101f_1000>>>>,
+    inner: UnsafeCell<Option<Uart<0x101f_1000>>>,
+    mutex: MaybeUninit<UnsafeCell<threadx_sys::TX_MUTEX_STRUCT>>,
 }
 
 impl GlobalUart {
     /// Create a new, empty, global UART wrapper
     const fn new() -> GlobalUart {
         GlobalUart {
-            inner: Mutex::new(RefCell::new(None)),
+            inner: UnsafeCell::new(None),
+            mutex: MaybeUninit::uninit(),
         }
     }
 
-    /// Store a new UART at run-time
+    /// Store a new UART at run-time, and initialise the ThreadX mutex that
+    /// holds it.
     ///
-    /// Gives you back the old one, if any.
-    fn store(&self, uart: Uart<0x101f_1000>) -> Option<Uart<0x101f_1000>> {
-        critical_section::with(|cs| {
-            let mut uart_ref = self.inner.borrow_ref_mut(cs);
-            uart_ref.replace(uart)
-        })
+    /// # Safety
+    ///
+    /// Only call from init, not when threads are running, and only call it
+    /// once.
+    unsafe fn store(&self, uart: Uart<0x101f_1000>) {
+        // Init the ThreadX mutex
+        unsafe {
+            // init mutex
+            threadx_sys::_tx_mutex_create(
+                UnsafeCell::raw_get(self.mutex.as_ptr()),
+                "my_mutex\0".as_ptr() as _,
+                0,
+            );
+            // unsafely store UART object
+            let ptr = self.inner.get();
+            let mut_ret = &mut *ptr;
+            *mut_ret = Some(uart);
+        }
     }
 }
 
@@ -46,16 +67,40 @@ impl GlobalUart {
 impl core::fmt::Write for &GlobalUart {
     /// Write the string to the inner UART, with a lock held
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        critical_section::with(|cs| {
-            let mut maybe_uart = self.inner.borrow_ref_mut(cs);
-            let Some(uart) = maybe_uart.as_mut() else {
-                return Err(core::fmt::Error);
-            };
-            uart.write_str(s)
-        })
+        // Grab ThreadX mutex
+        unsafe {
+            threadx_sys::_tx_mutex_get(
+                UnsafeCell::raw_get(self.mutex.as_ptr()),
+                threadx_sys::TX_WAIT_FOREVER,
+            );
+            core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::Acquire);
+        }
+
+        // # Safety
+        //
+        // We hold the ThreadX Mutex at this point
+        let uart_option_ref = unsafe { &mut *self.inner.get() };
+        let Some(uart) = uart_option_ref else {
+            return Err(core::fmt::Error);
+        };
+
+        let result = uart.write_str(s);
+
+        // Drop the UART ref, then the threadX mutex
+        let _ = uart;
+        unsafe {
+            core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::Release);
+            threadx_sys::_tx_mutex_put(UnsafeCell::raw_get(self.mutex.as_ptr()));
+        }
+
+        result
     }
 }
 
+/// Initialise our application.
+///
+/// ThreadX calls this function during scheduler start-up. We use it to create
+/// some threads.
 #[no_mangle]
 extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void) {
     _ = writeln!(&UART, "In tx_application_define()...");
@@ -66,7 +111,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
 
     let byte_pool = {
         static BYTE_POOL: StaticCell<threadx_sys::TX_BYTE_POOL> = StaticCell::new();
-        static BYTE_POOL_STORAGE: StaticCell<[u8; 32768]> = StaticCell::new();
+        static BYTE_POOL_STORAGE: StaticCell<[u8; DEMO_POOL_SIZE]> = StaticCell::new();
         let byte_pool = BYTE_POOL.uninit();
         let byte_pool_storage = BYTE_POOL_STORAGE.uninit();
         unsafe {
@@ -74,7 +119,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
                 byte_pool.as_mut_ptr(),
                 c!("byte-pool0").as_ptr() as *mut threadx_sys::CHAR,
                 byte_pool_storage.as_mut_ptr() as *mut _,
-                core::mem::size_of_val(&BYTE_POOL_STORAGE) as u32,
+                DEMO_POOL_SIZE as u32,
             );
             byte_pool.assume_init_mut()
         }
@@ -139,8 +184,8 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
             panic!("No space for stack");
         }
 
-        static THREAD_STORAGE: StaticCell<threadx_sys::TX_THREAD> = StaticCell::new();
-        let thread = THREAD_STORAGE.uninit();
+        static THREAD_STORAGE2: StaticCell<threadx_sys::TX_THREAD> = StaticCell::new();
+        let thread = THREAD_STORAGE2.uninit();
         unsafe {
             let res = threadx_sys::_tx_thread_create(
                 thread.as_mut_ptr(),
@@ -190,19 +235,52 @@ extern "C" fn my_thread(value: u32) {
 /// It is called by the start-up code in `lib.rs`.
 #[no_mangle]
 pub extern "C" fn kmain() {
-    let uart0 = unsafe { Uart::new_uart0() };
-    UART.store(uart0);
+    // Create a UART
+    let mut uart0 = unsafe { Uart::new_uart0() };
     _ = writeln!(
-        &UART,
+        uart0,
         "Hello, this is version {}!",
         BUILD_SLUG.unwrap_or("unknown")
     );
-    _ = writeln!(&UART, "Entering ThreadX kernel...");
+    unsafe {
+        UART.store(uart0);
+    }
+
+    let mut timer0 = unsafe { Timer0::new_timer0() };
+    timer0.init(
+        10_000,
+        sp804_timer::Mode::AutoReload,
+        sp804_timer::Interrupts::Enabled,
+    );
+
+    // Now we need to enable the Timer0 interrupt and connect it to IRQ on this core
+    // It's on PIC interrupt 4.
+    let mut vic = unsafe { pl190_vic::Interrupt::new() };
+    vic.init();
+    vic.enable_interrupt(4);
+
+    timer0.start();
+
     unsafe {
         threadx_sys::_tx_initialize_kernel_enter();
     }
 
     panic!("Kernel exited");
+}
+
+/// Called from the main interrupt handler
+#[no_mangle]
+unsafe extern "C" fn handle_interrupt() {
+    extern "C" {
+        fn _tx_timer_interrupt();
+    }
+
+    if Timer0::is_pending() {
+        unsafe {
+            _tx_timer_interrupt();
+        }
+        Timer0::clear_interrupt();
+    }
 }
 
 /// Called when the application raises an unrecoverable `panic!`.

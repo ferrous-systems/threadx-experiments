@@ -21,7 +21,7 @@ SECTIONS {
         /* Allocate room for stack. This must be big enough for the IRQ, FIQ, and 
         SYS stack if nested interrupts are enabled.  */
         .   =  ALIGN(8) ;
-        .   += 0x10000;
+        .   += 0x100000;
         _sp =  . - 16 ;
         _stack_top = ABSOLUTE(.) ;
     } > RAM

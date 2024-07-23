@@ -253,7 +253,6 @@ version = "0.1.0"
 dependencies = [
  "byte-strings",
  "cc",
- "critical-section",
  "embedded-alloc",
  "static_cell",
  "threadx-sys",

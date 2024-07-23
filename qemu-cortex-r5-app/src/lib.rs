@@ -1,7 +1,8 @@
 #![no_std]
 
-pub mod critical_section;
-pub mod virt_uart;
+pub mod pl011_uart;
+pub mod pl190_vic;
+pub mod sp804_timer;
 
 core::arch::global_asm!(
     r#"
@@ -14,15 +15,15 @@ core::arch::global_asm!(
 // Work around https://github.com/rust-lang/rust/issues/127269
 .fpu vfp3-d16
 
-__vectors:
-    LDR     pc, STARTUP                     @ Reset goes to startup function
-    LDR     pc, UNDEFINED                   @ Undefined handler
-    LDR     pc, SWI                         @ Software interrupt handler
-    LDR     pc, PREFETCH                    @ Prefetch exception handler
-    LDR     pc, ABORT                       @ Abort exception handler
-    LDR     pc, RESERVED                    @ Reserved exception handler
-    LDR     pc, IRQ                         @ IRQ interrupt handler
-    LDR     pc, FIQ                         @ FIQ interrupt handler
+_vectors:
+    LDR     pc, STARTUP                     @ Reset goes to startup function 0x00
+    LDR     pc, UNDEFINED                   @ Undefined handler              0x04
+    LDR     pc, SWI                         @ Software interrupt handler     0x08
+    LDR     pc, PREFETCH                    @ Prefetch exception handler     0x0C
+    LDR     pc, ABORT                       @ Abort exception handler        0x10
+    LDR     pc, RESERVED                    @ Reserved exception handler     0x14
+    LDR     pc, IRQ                         @ IRQ interrupt handler          0x18
+    LDR     pc, FIQ                         @ FIQ interrupt handler          0x1C
 
 STARTUP:
     .word  _start                           @ Reset goes to C startup function
