@@ -3,7 +3,7 @@
 
 name: workflow-code-analysis
 run-name: Run code analysis
-on: [push]
+on: [push, pull_request]
 jobs:
   job-clippy-nrf52-app:
     runs-on: ubuntu-latest

@@ -3,7 +3,7 @@
 
 name: workflow-build-everything
 run-name: Build Everything
-on: [push]
+on: [push, pull_request]
 jobs:
   job-build-nrf52-app:
     runs-on: ubuntu-latest
