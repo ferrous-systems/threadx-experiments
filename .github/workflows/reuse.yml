@@ -3,7 +3,7 @@
 
 name: workflow-code-licensing
 run-name: Check code licensing
-on: [push]
+on: [push, pull_request]
 jobs:
   job-run-reuse-lint:
     runs-on: ubuntu-latest

@@ -3,7 +3,7 @@
 
 name: workflow-code-format
 run-name: Check code formatting
-on: [push]
+on: [push, pull_request]
 jobs:
   job-format-demo-app:
     runs-on: ubuntu-latest

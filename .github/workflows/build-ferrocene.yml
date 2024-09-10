@@ -3,7 +3,7 @@
 
 name: workflow-build-everything-ferrocene
 run-name: Build Everything with Ferrocene
-on: [push]
+on: [push, pull_request]
 jobs:
   job-build-demo-app:
     runs-on: ubuntu-latest
