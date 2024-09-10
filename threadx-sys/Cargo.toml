@@ -6,7 +6,7 @@ name = "threadx-sys"
 version = "0.1.0"
 edition = "2021"
 authors = ["Jonathan Pallant <jonathan.pallant@ferrous-systems.com>"]
-license-file = "../LICENCES/LicenseRef-Azure.txt"
+license-file = "../LICENCES/MIT.txt"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

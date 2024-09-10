@@ -1,14 +1,14 @@
-@/**************************************************************************/
-@/*                                                                        */
-@/*       Copyright (c) Microsoft Corporation. All rights reserved.        */
-@/*                                                                        */
-@/*       This software is licensed under the Microsoft Software License   */
-@/*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
-@/*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
-@/*       and in the root directory of this software.                      */
-@/*       SPDX-License-Identifier: LicenseRef-Azure                        */
-@/*                                                                        */
-@/**************************************************************************/
+@/***************************************************************************
+@ * Copyright (c) 2024 Microsoft Corporation 
+@ * 
+@ * This program and the accompanying materials are made available under the
+@ * terms of the MIT License which is available at
+@ * https://opensource.org/licenses/MIT.
+@ * 
+@ * SPDX-License-Identifier: MIT
+@ *
+@ * Modified by Ferrous Systems
+@ **************************************************************************/
 @
 @
 @/**************************************************************************/
@@ -22,7 +22,6 @@
 @/**************************************************************************/
 @
 @
-    .global     _tx_initialize_low_level2
     .global     _tx_thread_system_stack_ptr
     .global     _tx_initialize_unused_memory
     .global     __sheap
