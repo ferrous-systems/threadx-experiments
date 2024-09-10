@@ -3,4 +3,4 @@
 
 [submodule "threadx"]
 	path = threadx
-	url = https://github.com/azure-rtos/threadx.git
+	url = https://github.com/eclipse-threadx/threadx.git
