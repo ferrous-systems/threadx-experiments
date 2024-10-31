@@ -1,7 +1,7 @@
-# Rust on ThreadX Demo
+# Rust on Eclipse ThreadX Demo
 
-This repository shows how to compile a Rust application which runs on the
-ThreadX RTOS.
+This repository shows how to compile a Rust application which runs on the [Eclipse
+ThreadX](https://projects.eclipse.org/projects/iot.threadx) RTOS.
 
 Note this project uses Git submodules, so you should run:
 
