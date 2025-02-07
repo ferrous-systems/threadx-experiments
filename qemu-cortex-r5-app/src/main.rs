@@ -234,7 +234,7 @@ extern "C" fn my_thread(value: u32) {
 ///
 /// It is called by the start-up code in `lib.rs`.
 #[no_mangle]
-pub extern "C" fn kmain() {
+pub extern "C" fn rust_main() {
     // Create a UART
     let mut uart0 = unsafe { Uart::new_uart0() };
     _ = writeln!(
@@ -268,9 +268,9 @@ pub extern "C" fn kmain() {
     panic!("Kernel exited");
 }
 
-/// Called from the main interrupt handler
+/// Called from the asm interrupt handler in cortex-r-rt
 #[no_mangle]
-unsafe extern "C" fn handle_interrupt() {
+unsafe extern "C" fn _irq_handler() {
     extern "C" {
         fn _tx_timer_interrupt();
     }

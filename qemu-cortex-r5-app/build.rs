@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::{env, error::Error, fs, path::PathBuf};
+use std::{env, error::Error, io::Write, path::PathBuf};
 
 static TX_PORT_FILES: &[&str] = &[
     "tx_thread_context_restore.S",
@@ -212,13 +212,20 @@ static TX_COMMON_FILES: &[&str] = &[
 ];
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let out_dir = PathBuf::from(env::var("OUT_DIR")?);
     let crate_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR")?);
 
-    // put memory layout (linker script) in the linker search path
-    fs::copy("linker.ld", out_dir.join("linker.ld"))?;
-    println!("cargo:rustc-link-search={}", out_dir.display());
-    println!("cargo:rerun-if-changed=linker.ld");
+    arm_targets::process();
+
+    match std::env::var("TARGET").expect("TARGET not set").as_str() {
+        "armv8r-none-eabihf" => {
+            write("memory.x", include_bytes!("mps3-an536.ld"));
+        }
+        _ => {
+            write("memory.x", include_bytes!("versatileab.ld"));
+        }
+    }
+    // Use the cortex-m-rt linker script
+    println!("cargo:rustc-link-arg=-Tlink.x");
 
     // Build our ThreadX static library
     let tx_common_dir = crate_dir.join("../threadx/common/src");
@@ -234,12 +241,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         .files(TX_COMMON_FILES.iter().map(|&s| tx_common_dir.join(s)))
         .compile("threadx");
 
-    cc::Build::new()
-        .include(&tx_common_inc)
-        .include(&tx_port_inc)
-        .flag("-g")
-        .file("src/tx_initialize_low_level.S")
-        .compile("startup");
-
     Ok(())
+}
+
+fn write(file: &str, contents: &[u8]) {
+    // Put linker file in our output directory and ensure it's on the
+    // linker search path.
+    let out = &std::path::PathBuf::from(std::env::var_os("OUT_DIR").unwrap());
+    std::fs::File::create(out.join(file))
+        .unwrap()
+        .write_all(contents)
+        .unwrap();
+    println!("cargo:rustc-link-search={}", out.display());
+    println!("cargo:rerun-if-changed={}", file);
 }

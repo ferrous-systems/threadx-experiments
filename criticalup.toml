@@ -4,7 +4,7 @@
 manifest-version = 1
 
 [products.ferrocene]
-release = "stable-24.11.0"
+release = "beta-25.02-2025-01-25"
 packages = [
     "rustc-${rustc-host}",
     "rust-std-${rustc-host}",
