@@ -1,6 +1,6 @@
 //! Common code for the ThreadX/Rust on Cortex-R5 demo
 
-// SPDX-FileCopyrightText: Copyright (c) 2024 Ferrous Systems
+// SPDX-FileCopyrightText: Copyright (c) 2025 Ferrous Systems
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![no_std]
