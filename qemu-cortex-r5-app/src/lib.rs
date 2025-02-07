@@ -1,6 +1,6 @@
 //! Common code for the ThreadX/Rust on Cortex-R5 demo
 
-// SPDX-FileCopyrightText: Copyright (c) 2024 Ferrous Systems
+// SPDX-FileCopyrightText: Copyright (c) 2025 Ferrous Systems
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![no_std]
@@ -9,62 +9,43 @@ pub mod pl011_uart;
 pub mod pl190_vic;
 pub mod sp804_timer;
 
+use cortex_r_rt as _;
+
 core::arch::global_asm!(
     r#"
+.global kmain
 
-.section .text.startup
-.global _start
-.global _vectors
-.code 32
-.align 0
-// Work around https://github.com/rust-lang/rust/issues/127269
-.fpu vfp3-d16
+SVC_MODE        =       0xD3                    @ Disable IRQ/FIQ SVC mode
 
-_vectors:
-    LDR     pc, STARTUP                     @ Reset goes to startup function 0x00
-    LDR     pc, UNDEFINED                   @ Undefined handler              0x04
-    LDR     pc, SWI                         @ Software interrupt handler     0x08
-    LDR     pc, PREFETCH                    @ Prefetch exception handler     0x0C
-    LDR     pc, ABORT                       @ Abort exception handler        0x10
-    LDR     pc, RESERVED                    @ Reserved exception handler     0x14
-    LDR     pc, IRQ                         @ IRQ interrupt handler          0x18
-    LDR     pc, FIQ                         @ FIQ interrupt handler          0x1C
+kmain:
+@
+@    /* Switch to SVC mode, which is what ThreadX expects us to be in (cortex-m-rt leaves us in SYS, not SVC) */
+@
+    MOV     r0, #SVC_MODE                       @ Build SVC mode CPSR
+    MSR     CPSR, r0                            @ Enter SVC mode
+    MOV     r1, sp                              @ Get pointer to stack area
+@
+@    /* Save the system stack pointer.  */
+@    _tx_thread_system_stack_ptr = (VOID_PTR) (sp);
+@
+    LDR     r2, =_tx_thread_system_stack_ptr    @ Pickup stack pointer
+    STR     r1, [r2]                            @ Save the system stack
+@
+@    /* Save the first available memory address.  */
+@    _tx_initialize_unused_memory =  (VOID_PTR) _end;
+@
+    LDR     r1, =_end                           @ Get end of non-initialized RAM area
+    LDR     r2, =_tx_initialize_unused_memory   @ Pickup unused memory ptr address
+    ADD     r1, r1, #8                          @ Increment to next free word
+    STR     r1, [r2]                            @ Save first free memory address
+@
+    bl      rust_main
+    B       .
 
-STARTUP:
-    .word  _start                           @ Reset goes to C startup function
-UNDEFINED:
-    .word  __tx_undefined                   @ Undefined handler
-SWI:
-    .word  __tx_swi_interrupt               @ Software interrupt handler
-PREFETCH:
-    .word  __tx_prefetch_handler            @ Prefetch exception handler
-ABORT:                             
-    .word  __tx_abort_handler               @ Abort exception handler
-RESERVED:                            
-    .word  __tx_reserved_handler            @ Reserved exception handler
-IRQ:                                  
-    .word  __tx_irq_handler                 @ IRQ interrupt handler
-FIQ:
-    .word  __tx_fiq_handler                 @ FIQ interrupt handler
+.global _tx_initialize_low_level
 
-_start:
-    // Set stack pointer
-    ldr sp, =_stack_top
+_tx_initialize_low_level:
+    bx      lr
 
-    // Allow VFP coprocessor access
-    mrc p15, 0, r0, c1, c0, 2
-    orr r0, r0, #0xF00000
-    mcr p15, 0, r0, c1, c0, 2
-
-    // Enable VFP
-    mov r0, #0x40000000
-    vmsr fpexc, r0
-
-    // Jump to application
-    bl kmain
-
-    // In case the application returns, loop forever
-    b .
-
-"#
+    "#
 );
