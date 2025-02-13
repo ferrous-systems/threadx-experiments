@@ -16,7 +16,7 @@ therefore manually translated some of those constants and placed them into the
 [`lib.rs`](./src/lib.rs) for user convenience.
 
 This library assumes that ThreadX is available at `../threadx`. If you wish to
-use this library outside of this example repository you may wish to alter the
+use this library outside of this example repository, you may alter the
 code to accept an environment variable that gives the path to the ThreadX source
 code. It is a deliberate choice to not include the ThreadX source code as part
 of this library.
