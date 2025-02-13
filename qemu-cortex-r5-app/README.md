@@ -42,7 +42,7 @@ I am my_thread(aabbccdd), count = 3
 Console output appears through a Rust driver for the PL011 UART, which is
 included in this binary for simplicity.
 
-You may need to run `killall qemu-system-arm` or use your system Task Manager to
+You may need to run `killall qemu-system-arm` or use your system's Task Manager to
 kill QEMU, as the UART console support seems to prevent it from responding to
 `Ctrl-C` - at least on macOS. Windows users might try `Ctrl+Break` instead.
 
