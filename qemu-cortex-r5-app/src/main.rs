@@ -1,12 +1,11 @@
 //! Rust Demo for a QEMU Cortex-R machine, running ThreadX
 
-// SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
+// SPDX-FileCopyrightText: Copyright (c) 2025 Ferrous Systems
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![no_std]
 #![no_main]
 
-use byte_strings::c;
 use core::{cell::UnsafeCell, fmt::Write as _, mem::MaybeUninit};
 use qemu_cortex_r5_app::{
     pl011_uart::Uart,
@@ -24,8 +23,13 @@ static UART: GlobalUart = GlobalUart::new();
 
 unsafe impl Sync for GlobalUart {}
 
+/// This is our thread-safe global UART.
 struct GlobalUart {
+    /// This holds the Rust driver
     inner: UnsafeCell<Option<Uart<0x101f_1000>>>,
+    /// This ThreadX mutex is used to guard access to the UART in a thread-safe
+    /// way, without using a Rust 'critical-section' (which would disable
+    /// interrupts).
     mutex: MaybeUninit<UnsafeCell<threadx_sys::TX_MUTEX_STRUCT>>,
 }
 
@@ -51,7 +55,7 @@ impl GlobalUart {
             // init mutex
             threadx_sys::_tx_mutex_create(
                 UnsafeCell::raw_get(self.mutex.as_ptr()),
-                "my_mutex\0".as_ptr() as _,
+                c"my_mutex".as_ptr() as _,
                 0,
             );
             // unsafely store UART object
@@ -117,7 +121,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         unsafe {
             threadx_sys::_tx_byte_pool_create(
                 byte_pool.as_mut_ptr(),
-                c!("byte-pool0").as_ptr() as *mut threadx_sys::CHAR,
+                c"byte-pool0".as_ptr() as *mut threadx_sys::CHAR,
                 byte_pool_storage.as_mut_ptr() as *mut _,
                 DEMO_POOL_SIZE as u32,
             );
@@ -146,7 +150,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         unsafe {
             let res = threadx_sys::_tx_thread_create(
                 thread.as_mut_ptr(),
-                c!("thread0").as_ptr() as *mut threadx_sys::CHAR,
+                c"thread0".as_ptr() as *mut threadx_sys::CHAR,
                 Some(my_thread),
                 entry,
                 stack_pointer,
@@ -189,7 +193,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         unsafe {
             let res = threadx_sys::_tx_thread_create(
                 thread.as_mut_ptr(),
-                c!("thread1").as_ptr() as *mut threadx_sys::CHAR,
+                c"thread1".as_ptr() as *mut threadx_sys::CHAR,
                 Some(my_thread),
                 entry,
                 stack_pointer,

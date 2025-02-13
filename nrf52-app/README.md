@@ -1,10 +1,24 @@
-# Rust on ThreadX on nRF52 Example Binary
+# Rust on Eclipse ThreadX Demo for the nRF52840-DK
 
-This is a Rust application which uses ThreadX and runs on an nRF52840-DK board.
+This example program shows how to compile a Rust application which runs on the [Eclipse
+ThreadX](https://projects.eclipse.org/projects/iot.threadx) RTOS.
 
-You can compile it with Rust, or with Ferrocene. You will need
-`arm-none-eabi-gcc` installed to compile ThreadX, which this application does
-automatically. You will also need `probe-rs` from <https://probe.rs>.
+This application is for the [nRF52840-DK], which includes an Arm Cortex-M4
+processor. This board was chosen because it is used in Ferrous System's Rust
+Trainings, is inexpensive, and includes a SEGGER J-Link on-board.
+
+To build and run this project, simply run:
+
+```bash
+cargo run --release
+```
+
+You must have `probe-rs` in your system's PATH. See <https://probe.rs> for more
+details and installation instructions. You will also need `arm-none-eabi-gcc` in
+your system's PATH, so this project can automatically compile ThreadX (which it
+looks for in `../threadx`).
+
+You will see something like:
 
 ```console
 $ cargo run --release
@@ -13,38 +27,47 @@ $ cargo run --release
      Running `probe-rs run --chip nRF52840_xxAA target/thumbv7em-none-eabi/debug/nrf52-app`
       Erasing ✔ [00:00:00] [####################################] 12.00 KiB/12.00 KiB @ 33.03 KiB/s (eta 0s )
   Programming ✔ [00:00:00] [####################################] 12.00 KiB/12.00 KiB @ 42.84 KiB/s (eta 0s )    Finished in 0.661s
-<lvl> Hello, this is version unknown!
+Hello, this is version unknown!
 └─ nrf52_app::__cortex_m_rt_main @ src/main.rs:151
-<lvl> Entering ThreadX kernel...
+Entering ThreadX kernel...
 └─ nrf52_app::__cortex_m_rt_main @ src/main.rs:186
-<lvl> In tx_application_define()...
+In tx_application_define()...
 └─ nrf52_app::tx_application_define @ src/main.rs:26
-<lvl> Stack allocated @ 0x20037444
+Stack allocated @ 0x20037444
 └─ nrf52_app::tx_application_define @ src/main.rs:59
-<lvl> Thread spawned (entry=12345678) @ 0x2003f440
+Thread spawned (entry=12345678) @ 0x2003f440
 └─ nrf52_app::tx_application_define @ src/main.rs:85
-<lvl> Stack allocated @ 0x2003944c
+Stack allocated @ 0x2003944c
 └─ nrf52_app::tx_application_define @ src/main.rs:102
-<lvl> Thread spawned (entry=aabbccdd) @ 0x2003f4f8
+Thread spawned (entry=aabbccdd) @ 0x2003f4f8
 └─ nrf52_app::tx_application_define @ src/main.rs:128
-<lvl> I am my_thread(12345678)
+I am my_thread(12345678)
 └─ nrf52_app::my_thread @ src/main.rs:136
-<lvl> I am my_thread(aabbccdd)
+I am my_thread(aabbccdd)
 └─ nrf52_app::my_thread @ src/main.rs:136
-<lvl> I am my_thread(12345678), count = 1
+I am my_thread(12345678), count = 1
 └─ nrf52_app::my_thread @ src/main.rs:145
-<lvl> I am my_thread(aabbccdd), count = 1
+I am my_thread(aabbccdd), count = 1
 └─ nrf52_app::my_thread @ src/main.rs:145
-<lvl> I am my_thread(12345678), count = 2
+I am my_thread(12345678), count = 2
 └─ nrf52_app::my_thread @ src/main.rs:145
-<lvl> I am my_thread(aabbccdd), count = 2
+I am my_thread(aabbccdd), count = 2
 └─ nrf52_app::my_thread @ src/main.rs:145
-<lvl> I am my_thread(12345678), count = 3
+I am my_thread(12345678), count = 3
 └─ nrf52_app::my_thread @ src/main.rs:145
 ...
 ```
 
+Console output appears through `defmt`, Ferrous System's *deferred formatting*
+logging mechanism, which is natively understood by `probe-rs`.
+
+ThreadX is automatically compiled from source thanks to the
+[`build.rs`](./build.rs) script that this package includes. Refer to that file
+if you wish to adjust which ThreadX components are compiled in.
+
+[nRF52840-DK]: https://www.nordicsemi.com/Products/Development-hardware/nRF52840-DK
+
 ## Licence
 
-* Copyright (c) 2024 Ferrous Systems
+* Copyright (c) 2025 Ferrous Systems
 * SPDX-License-Identifier: MIT OR Apache-2.0
