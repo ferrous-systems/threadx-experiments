@@ -15,7 +15,7 @@ cargo run --release
 
 You must have `probe-rs` in your system's PATH. See <https://probe.rs> for more
 details and installation instructions. You will also need `arm-none-eabi-gcc` in
-your system's PATH, so this project can automatically compile ThreadX (which is
+your system's PATH, so this project can automatically compile ThreadX (which it
 looks for in `../threadx`).
 
 You will see something like:
