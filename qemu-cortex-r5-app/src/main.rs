@@ -6,7 +6,6 @@
 #![no_std]
 #![no_main]
 
-use byte_strings::c;
 use core::{cell::UnsafeCell, fmt::Write as _, mem::MaybeUninit};
 use qemu_cortex_r5_app::{
     pl011_uart::Uart,
@@ -56,7 +55,7 @@ impl GlobalUart {
             // init mutex
             threadx_sys::_tx_mutex_create(
                 UnsafeCell::raw_get(self.mutex.as_ptr()),
-                "my_mutex\0".as_ptr() as _,
+                c"my_mutex".as_ptr() as _,
                 0,
             );
             // unsafely store UART object
@@ -122,7 +121,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         unsafe {
             threadx_sys::_tx_byte_pool_create(
                 byte_pool.as_mut_ptr(),
-                c!("byte-pool0").as_ptr() as *mut threadx_sys::CHAR,
+                c"byte-pool0".as_ptr() as *mut threadx_sys::CHAR,
                 byte_pool_storage.as_mut_ptr() as *mut _,
                 DEMO_POOL_SIZE as u32,
             );
@@ -151,7 +150,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         unsafe {
             let res = threadx_sys::_tx_thread_create(
                 thread.as_mut_ptr(),
-                c!("thread0").as_ptr() as *mut threadx_sys::CHAR,
+                c"thread0".as_ptr() as *mut threadx_sys::CHAR,
                 Some(my_thread),
                 entry,
                 stack_pointer,
@@ -194,7 +193,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         unsafe {
             let res = threadx_sys::_tx_thread_create(
                 thread.as_mut_ptr(),
-                c!("thread1").as_ptr() as *mut threadx_sys::CHAR,
+                c"thread1".as_ptr() as *mut threadx_sys::CHAR,
                 Some(my_thread),
                 entry,
                 stack_pointer,

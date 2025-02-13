@@ -13,7 +13,6 @@ description = "A simple ARMv7-R demo application that runs ThreadX in QEMU and c
 embedded-alloc = "0.5.1"
 static_cell = "2.1.0"
 threadx-sys = { path = "../threadx-sys" }
-byte-strings = "0.3.1"
 
 [build-dependencies]
 cc = "1.1.6"

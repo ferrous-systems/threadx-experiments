@@ -6,7 +6,6 @@
 #![no_main]
 #![no_std]
 
-use byte_strings::c;
 use cortex_m_rt::entry;
 use defmt_rtt as _;
 use nrf52840_hal::prelude::OutputPin;
@@ -37,7 +36,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         unsafe {
             threadx_sys::_tx_byte_pool_create(
                 byte_pool.as_mut_ptr(),
-                c!("byte-pool0").as_ptr() as *mut threadx_sys::CHAR,
+                c"byte-pool0".as_ptr() as *mut threadx_sys::CHAR,
                 byte_pool_storage.as_mut_ptr() as *mut _,
                 DEMO_POOL_SIZE as u32,
             );
@@ -66,7 +65,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         unsafe {
             let res = threadx_sys::_tx_thread_create(
                 thread.as_mut_ptr(),
-                c!("thread0").as_ptr() as *mut threadx_sys::CHAR,
+                c"thread0".as_ptr() as *mut threadx_sys::CHAR,
                 Some(my_thread),
                 entry,
                 stack_pointer,
@@ -109,7 +108,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         unsafe {
             let res = threadx_sys::_tx_thread_create(
                 thread.as_mut_ptr(),
-                c!("thread1").as_ptr() as *mut threadx_sys::CHAR,
+                c"thread1".as_ptr() as *mut threadx_sys::CHAR,
                 Some(my_thread),
                 entry,
                 stack_pointer,
