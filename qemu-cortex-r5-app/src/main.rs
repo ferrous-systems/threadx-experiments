@@ -1,6 +1,6 @@
 //! Rust Demo for a QEMU Cortex-R machine, running ThreadX
 
-// SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
+// SPDX-FileCopyrightText: Copyright (c) 2025 Ferrous Systems
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![no_std]
@@ -24,8 +24,13 @@ static UART: GlobalUart = GlobalUart::new();
 
 unsafe impl Sync for GlobalUart {}
 
+/// This is our thread-safe global UART.
 struct GlobalUart {
+    /// This holds the Rust driver
     inner: UnsafeCell<Option<Uart<0x101f_1000>>>,
+    /// This ThreadX mutex is used to guard access to the UART in a thread-safe
+    /// way, without using a Rust 'critical-section' (which would disable
+    /// interrupts).
     mutex: MaybeUninit<UnsafeCell<threadx_sys::TX_MUTEX_STRUCT>>,
 }
 
