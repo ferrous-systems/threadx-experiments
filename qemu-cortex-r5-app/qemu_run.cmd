@@ -5,5 +5,4 @@
 : # for details.
 :; ./qemu_run.sh $* ; exit
 @ECHO OFF
-ECHO This is %COMSPEC%
 call qemu_run.bat %*
