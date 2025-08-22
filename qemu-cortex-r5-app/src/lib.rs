@@ -9,6 +9,12 @@ pub mod pl011_uart;
 pub mod pl190_vic;
 pub mod sp804_timer;
 
+// Ensure we pick up the defmt-semihosting transport
+use defmt_semihosting as _;
+
+// Ensure we pick up the critical-section impl
+use cortex_ar as _;
+
 core::arch::global_asm!(
     r#"
 

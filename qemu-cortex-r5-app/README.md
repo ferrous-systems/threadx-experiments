@@ -15,36 +15,37 @@ cargo run
 
 You must have `qemu-system-arm` in your system's PATH. You will also need
 `arm-none-eabi-gcc` in your system's PATH, so this project can automatically
-compile ThreadX (which is looks for in `../threadx`).
+compile ThreadX (which is looks for in `../threadx`). Our runner also requires `defmt-print`.
 
 You will see something like:
 
 ```console
-$ cargo run
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.50s
-     Running `qemu-system-arm -machine versatileab -cpu cortex-r5f -semihosting -nographic -kernel target/armv7r-none-eabihf/debug/qemu-cortex-r5-app`
-Hello, this is version unknown!
-In tx_application_define()...
-Stack allocated @ 0xbc48
-Thread spawned (entry=12345678) @ 0x17c44
-Stack allocated @ 0xfc50
-Thread spawned (entry=aabbccdd) @ 0x17cfc
-I am my_thread(12345678)
-I am my_thread(aabbccdd)
-I am my_thread(12345678), count = 1
-I am my_thread(aabbccdd), count = 1
-I am my_thread(12345678), count = 2
-I am my_thread(aabbccdd), count = 2
-I am my_thread(12345678), count = 3
-I am my_thread(aabbccdd), count = 3
+$ DEFMT_LOG=info cargo run
+   Compiling defmt-macros v1.0.1
+   Compiling defmt v1.0.1
+   Compiling defmt v0.3.100
+   Compiling defmt-semihosting v0.3.0
+   Compiling cortex-ar v0.2.0
+   Compiling qemu-cortex-r5-app v0.1.0 (threadx-experiments/qemu-cortex-r5-app)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.17s
+     Running `threadx-experiments/qemu-cortex-r5-app/./qemu_run.sh target/armv7r-none-eabihf/debug/qemu-cortex-r5-app`
+ELF_BINARY=target/armv7r-none-eabihf/debug/qemu-cortex-r5-app
+Running on '-cpu cortex-r5f -machine versatileab'...
+------------------------------------------------------------------------
+[INFO ] Hello, this is version unknown! (src/main.rs:156)
+[INFO ] In tx_application_define()... (src/main.rs:27)
+[INFO ] I am my_thread(12345678) (src/main.rs:138)
+[INFO ] I am my_thread(aabbccdd) (src/main.rs:138)
+[INFO ] I am my_thread(12345678), count = 1 (src/main.rs:147)
+[INFO ] I am my_thread(aabbccdd), count = 1 (src/main.rs:147)
+[INFO ] I am my_thread(12345678), count = 2 (src/main.rs:147)
+[INFO ] I am my_thread(aabbccdd), count = 2 (src/main.rs:147)
 ```
 
-Console output appears through a Rust driver for the PL011 UART, which is
-included in this binary for simplicity.
+Press `Ctrl-C` to quit QEMU.
 
-You may need to run `killall qemu-system-arm` or use your system's Task Manager to
-kill QEMU, as the UART console support seems to prevent it from responding to
-`Ctrl-C` - at least on macOS. Windows users might try `Ctrl+Break` instead.
+Console output appears through `defmt` which is transported over QEMU's
+semihosting interface into `defmt-print` on the host.
 
 If you wish to debug the program, run:
 
@@ -52,8 +53,8 @@ If you wish to debug the program, run:
 cargo run -- -s -S
 ```
 
-The `-s -S` arguments are passed to `qemu-system-arm` and will cause it to start
-a GDB server on `localhost:1234` and wait for GDB to connect.
+The `-s -S` arguments are passed to `qemu-system-arm` and will cause it to
+start a GDB server on `localhost:1234` and wait for GDB to connect.
 
 ThreadX is automatically compiled from source thanks to the
 [`build.rs`](./build.rs) script that this package includes. Refer to that file
