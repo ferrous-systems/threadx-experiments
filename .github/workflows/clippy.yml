@@ -17,7 +17,7 @@ jobs:
           sudo apt-get update -y && sudo apt-get -y install gcc-arm-none-eabi
       - name: Add rustup target
         run: |
-          rustup target add thumbv7em-none-eabi
+          rustup target add thumbv7em-none-eabihf
       - name: Check Clippy on nRF52 App
         env:
           RUSTFLAGS: "-Dwarnings"

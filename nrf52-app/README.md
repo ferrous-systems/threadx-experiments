@@ -24,7 +24,7 @@ You will see something like:
 $ cargo run --release
    Compiling nrf52-app v0.0.0 (/Users/jonathan/Documents/ferrous-systems/threadx-experiments/nrf52-app)
     Finished `dev` profile [optimized + debuginfo] target(s) in 4.81s
-     Running `probe-rs run --chip nRF52840_xxAA target/thumbv7em-none-eabi/debug/nrf52-app`
+     Running `probe-rs run --chip nRF52840_xxAA target/thumbv7em-none-eabihf/debug/nrf52-app`
       Erasing ✔ [00:00:00] [####################################] 12.00 KiB/12.00 KiB @ 33.03 KiB/s (eta 0s )
   Programming ✔ [00:00:00] [####################################] 12.00 KiB/12.00 KiB @ 42.84 KiB/s (eta 0s )    Finished in 0.661s
 Hello, this is version unknown!

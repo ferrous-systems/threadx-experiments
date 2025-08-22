@@ -32,18 +32,18 @@ jobs:
           cd nrf52-app
           rustc --version
           cargo --version
-          cargo check --target=thumbv7em-none-eabi
+          cargo check --target=thumbv7em-none-eabihf
       - name: Build nRF52 App
         run: |
           cd nrf52-app
           rustc --version
           cargo --version
-          cargo build --target=thumbv7em-none-eabi --release
+          cargo build --target=thumbv7em-none-eabihf --release
       - name: Upload nrf52-app
         uses: actions/upload-artifact@master
         with:
           name: nrf52-app
-          path: nrf52-app/target/thumbv7em-none-eabi/release/nrf52-app
+          path: nrf52-app/target/thumbv7em-none-eabihf/release/nrf52-app
   job-build-qemu-cortex-r5-app:
     runs-on: ubuntu-latest
     steps:

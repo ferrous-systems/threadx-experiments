@@ -4,7 +4,7 @@
 manifest-version = 1
 
 [products.ferrocene]
-release = "pre-rolling-2024-05-24"
+release = "stable-25.05.0"
 packages = [
     "rustc-${rustc-host}",
     "rust-std-${rustc-host}",
@@ -15,6 +15,6 @@ packages = [
     "ferrocene-self-test-${rustc-host}",
     "flip-link-${rustc-host}",
     "llvm-tools-${rustc-host}",
-    "rust-std-thumbv7em-none-eabi",
+    "rust-std-thumbv7em-none-eabihf",
     "rust-std-armv7r-none-eabihf",
 ]
