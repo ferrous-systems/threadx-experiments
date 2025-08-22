@@ -220,11 +220,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("cargo:rustc-link-search={}", out_dir.display());
     println!("cargo:rerun-if-changed=linker.ld");
 
-    // Build our ThreadX static library
+    // Set up common paths
     let tx_common_dir = crate_dir.join("../threadx/common/src");
     let tx_common_inc = crate_dir.join("../threadx/common/inc");
     let tx_port_dir = crate_dir.join("../threadx/ports/cortex_r5/gnu/src");
     let tx_port_inc = crate_dir.join("../threadx/ports/cortex_r5/gnu/inc");
+
+    // Check for ThreadX source code
+    for file in TX_PORT_FILES.iter().map(|&s| tx_port_dir.join(s)) {
+        if !std::fs::exists(&file)? {
+            eprintln!("Cannot find ThreadX file {}!", file.display());
+            eprintln!("Did you run `git submodule update --init`?");
+            panic!("Missing ThreadX source code");
+        }
+    }
+
+    // Build our ThreadX static library
     cc::Build::new()
         .include(&tx_common_inc)
         .include(&tx_port_inc)

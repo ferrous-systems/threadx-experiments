@@ -127,7 +127,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         }
     };
     defmt::debug!(
-        "Thread spawned (entry={:08x}) @ 0x{=usize:08x}",
+        "Thread spawned entry={=u32:08x} @ 0x{=usize:08x}",
         entry,
         thread1 as *const _ as usize
     );
@@ -135,8 +135,8 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
 
 /// A function we execute in its own thread.
 extern "C" fn my_thread(value: u32) {
-    defmt::info!("I am my_thread({:08x})", value);
-    let mut thread_counter = 0;
+    defmt::info!("I am my_thread({=u32:08x})", value);
+    let mut thread_counter: u64 = 0;
     loop {
         thread_counter += 1;
 
@@ -144,7 +144,11 @@ extern "C" fn my_thread(value: u32) {
             threadx_sys::_tx_thread_sleep(100);
         }
 
-        defmt::info!("I am my_thread({:08x}), count = {}", value, thread_counter);
+        defmt::info!(
+            "I am my_thread({=u32:08x}), count = {=u64}",
+            value,
+            thread_counter
+        );
     }
 }
 

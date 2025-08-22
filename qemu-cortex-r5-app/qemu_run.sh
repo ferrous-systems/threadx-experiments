@@ -12,5 +12,5 @@ LOG_FORMAT='{[{L}]%bold} {s} {({ff}:{l:1})%dimmed}'
 echo "ELF_BINARY=$ELF_BINARY"
 echo "Running on '$MACHINE'..."
 echo "------------------------------------------------------------------------"
-qemu-system-arm $MACHINE -semihosting-config enable=on,target=native -kernel $ELF_BINARY $* | defmt-print -e $ELF_BINARY --log-format="$LOG_FORMAT"
+qemu-system-arm $MACHINE -semihosting-config enable=on,target=native -nographic -kernel $ELF_BINARY $* | defmt-print -e $ELF_BINARY --log-format="$LOG_FORMAT"
 echo "------------------------------------------------------------------------"
