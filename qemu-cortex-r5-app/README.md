@@ -15,7 +15,7 @@ cargo run
 
 You must have `qemu-system-arm` in your system's PATH. You will also need
 `arm-none-eabi-gcc` in your system's PATH, so this project can automatically
-compile ThreadX (which is looks for in `../threadx`). Our runner also requires `defmt-print`.
+compile ThreadX (which is expected in `../threadx`). Our runner also requires `defmt-print`.
 
 You will see something like:
 
