@@ -13,10 +13,10 @@ To build this demo you must:
 
 1. Run `git submodule update --init` to check-out the ThreadX source code
 2. Install `defmt-print` with `cargo install defmt-print`
-3. Install `qemu-system-arm` - see [the QEMU website](https://www.qemu.org/download/)
-4. Install `arm-none-eabi-gcc` - such as from the [Arm GNU Toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain)
-5. Install `libclang`, as specified in [the `bindgen` documentation](https://rust-lang.github.io/rust-bindgen/requirements.html)
-6. Add the `armv7r-none-eabihf` target with `rustup`:
+3. Install `qemu-system-arm` - see [the QEMU website](https://www.qemu.org/download/) or via `winget install --id=SoftwareFreedomConservancy.QEMU`
+4. Install `arm-none-eabi-gcc` - such as from the [Arm GNU Toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain) or via `winget install gcc-arm-embedded`
+5. Install `libclang`, as specified in [the `bindgen` documentation](https://rust-lang.github.io/rust-bindgen/requirements.html) or via `winget install LLVM.LLVM`
+6. Add the `armv7r-none-eabihf` target with `rustup target add armv7r-none-eabih`:
 
   ```bash
   rustup target add armv7r-none-eabihf --toolchain=stable
