@@ -12,4 +12,4 @@ echo ELF_BINARY=%ELF_BINARY%
 echo Running on '%MACHINE%'...
 echo ------------------------------------------------------------------------
 "%QEMU_PATH%\qemu-system-arm" %MACHINE% -semihosting-config enable=on -nographic -kernel %* | defmt-print -e %ELF_BINARY% --log-format="{[{L}]%%bold} {s} {({ff}:{l:1})%%dimmed}"
-echo "------------------------------------------------------------------------
+echo ------------------------------------------------------------------------
