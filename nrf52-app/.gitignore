@@ -3,3 +3,4 @@
 
 target
 .vscode/.cortex-debug.registers.state.json
+*.sublime-workspace
