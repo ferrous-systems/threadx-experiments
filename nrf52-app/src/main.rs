@@ -59,7 +59,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
                 threadx_sys::TX_NO_WAIT,
             );
         }
-        defmt::println!("Stack allocated @ {}", stack_pointer);
+        defmt::debug!("Stack allocated @ {}", stack_pointer);
         if stack_pointer.is_null() {
             panic!("No space for stack");
         }
@@ -85,7 +85,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
             thread.assume_init_mut()
         }
     };
-    defmt::println!(
+    defmt::info!(
         "Thread spawned (entry={:08x}) @ {}",
         entry,
         thread0 as *const _
@@ -102,7 +102,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
                 threadx_sys::TX_NO_WAIT,
             );
         }
-        defmt::println!("Stack allocated @ {:08x}", stack_pointer);
+        defmt::debug!("Stack allocated @ {:08x}", stack_pointer);
         if stack_pointer.is_null() {
             panic!("No space for stack");
         }
@@ -128,7 +128,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
             thread.assume_init_mut()
         }
     };
-    defmt::println!(
+    defmt::info!(
         "Thread spawned (entry={:08x}) @ {}",
         entry,
         thread1 as *const _
@@ -167,7 +167,7 @@ extern "C" fn my_thread(value: u32) {
 
 #[entry]
 fn main() -> ! {
-    defmt::println!(
+    defmt::warn!(
         "Hello, this is version {}!",
         BUILD_SLUG.unwrap_or("unknown")
     );
@@ -206,19 +206,12 @@ fn main() -> ! {
         .set_clock_source(cortex_m::peripheral::syst::SystClkSource::Core);
     cp.SYST.enable_counter();
 
-    defmt::println!("Entering ThreadX kernel...");
+    defmt::info!("Entering ThreadX kernel...");
     unsafe {
         threadx_sys::_tx_initialize_kernel_enter();
     }
 
     panic!("Kernel exited");
-}
-
-// same panicking *behavior* as `panic-probe` but doesn't print a panic message
-// this prevents the panic message being printed *twice* when `defmt::panic` is invoked
-#[defmt::panic_handler]
-fn panic() -> ! {
-    cortex_m::asm::udf()
 }
 
 #[no_mangle]
