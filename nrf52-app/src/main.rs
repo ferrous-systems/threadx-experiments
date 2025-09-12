@@ -8,7 +8,8 @@
 
 use cortex_m_rt::entry;
 use defmt_rtt as _;
-use nrf52840_hal::prelude::OutputPin;
+use embedded_hal::digital::v2::OutputPin;
+use nrf52840_hal::gpio::{Output, Pin, PushPull};
 use panic_probe as _;
 use static_cell::StaticCell;
 
@@ -19,6 +20,9 @@ const DEMO_POOL_SIZE: usize = (DEMO_STACK_SIZE * 2) + 16384;
 
 const SYSTEM_CLOCK: u32 = 64_000_000;
 const SYSTICK_CYCLES: u32 = (SYSTEM_CLOCK / 100) - 1;
+
+static LED_PIN: critical_section::Mutex<core::cell::RefCell<Option<Pin<Output<PushPull>>>>> =
+    critical_section::Mutex::new(core::cell::RefCell::new(None));
 
 #[no_mangle]
 extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void) {
@@ -55,7 +59,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
                 threadx_sys::TX_NO_WAIT,
             );
         }
-        defmt::println!("Stack allocated @ {}", stack_pointer);
+        defmt::debug!("Stack allocated @ {}", stack_pointer);
         if stack_pointer.is_null() {
             panic!("No space for stack");
         }
@@ -81,7 +85,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
             thread.assume_init_mut()
         }
     };
-    defmt::println!(
+    defmt::info!(
         "Thread spawned (entry={:08x}) @ {}",
         entry,
         thread0 as *const _
@@ -98,7 +102,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
                 threadx_sys::TX_NO_WAIT,
             );
         }
-        defmt::println!("Stack allocated @ {:08x}", stack_pointer);
+        defmt::debug!("Stack allocated @ {:08x}", stack_pointer);
         if stack_pointer.is_null() {
             panic!("No space for stack");
         }
@@ -124,7 +128,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
             thread.assume_init_mut()
         }
     };
-    defmt::println!(
+    defmt::info!(
         "Thread spawned (entry={:08x}) @ {}",
         entry,
         thread1 as *const _
@@ -132,22 +136,38 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
 }
 
 extern "C" fn my_thread(value: u32) {
-    defmt::println!("I am my_thread({:08x})", value);
+    defmt::info!("I am my_thread({:08x})", value);
     let mut thread_counter = 0;
+    let sleep_time = if value == 0x12345678 { 100 } else { 200 };
     loop {
         thread_counter += 1;
 
-        unsafe {
-            threadx_sys::_tx_thread_sleep(100);
+        // try setting a breakpoint here
+        if value == 0x12345678 {
+            // blink the LED
+            critical_section::with(|cs| {
+                let mut led_pin = LED_PIN.borrow_ref_mut(cs);
+                if let Some(led_pin) = led_pin.as_mut() {
+                    if thread_counter & 1 == 0 {
+                        led_pin.set_high().unwrap();
+                    } else {
+                        led_pin.set_low().unwrap();
+                    }
+                }
+            });
         }
 
-        defmt::println!("I am my_thread({:08x}), count = {}", value, thread_counter);
+        unsafe {
+            threadx_sys::_tx_thread_sleep(sleep_time);
+        }
+
+        defmt::info!("I am my_thread({:08x}), count = {}", value, thread_counter);
     }
 }
 
 #[entry]
 fn main() -> ! {
-    defmt::println!(
+    defmt::warn!(
         "Hello, this is version {}!",
         BUILD_SLUG.unwrap_or("unknown")
     );
@@ -169,6 +189,10 @@ fn main() -> ! {
         .into_push_pull_output(nrf52840_hal::gpio::Level::High);
 
     let _ = led.set_low();
+    critical_section::with(|cs| {
+        let mut led_pin = LED_PIN.borrow_ref_mut(cs);
+        *led_pin = Some(led);
+    });
 
     // Enable cycle counter
     cp.DCB.enable_trace();
@@ -182,19 +206,12 @@ fn main() -> ! {
         .set_clock_source(cortex_m::peripheral::syst::SystClkSource::Core);
     cp.SYST.enable_counter();
 
-    defmt::println!("Entering ThreadX kernel...");
+    defmt::info!("Entering ThreadX kernel...");
     unsafe {
         threadx_sys::_tx_initialize_kernel_enter();
     }
 
     panic!("Kernel exited");
-}
-
-// same panicking *behavior* as `panic-probe` but doesn't print a panic message
-// this prevents the panic message being printed *twice* when `defmt::panic` is invoked
-#[defmt::panic_handler]
-fn panic() -> ! {
-    cortex_m::asm::udf()
 }
 
 #[no_mangle]

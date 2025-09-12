@@ -2,27 +2,26 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 {
-  // Use `nc localhost 8765 | defmt-print -e ./target/thumbv7em-none-eabihf/release/nrf52-app` to print the defmt output
   "version": "0.2.0",
   "configurations": [
     {
-      "cwd": "${workspaceRoot}",
-      "executable": "./target/thumbv7em-none-eabihf/release/nrf52-app",
-      "name": "Debug Microcontroller (launch)",
+      "type": "probe-rs-debug",
       "request": "launch",
-      "preLaunchTask": "rust: cargo build release",
-      "type": "cortex-debug",
-      "runToEntryPoint": "main",
-      "configFiles": ["interface/jlink.cfg"],
-      "servertype": "openocd",
-      "openOCDLaunchCommands": [
-        "transport select swd",
-        "source [find target/nrf52.cfg]"
-      ],
-      "postLaunchCommands": [
-        "monitor rtt setup 0x20000000 262144 \"SEGGER RTT\"",
-        "monitor rtt start",
-        "monitor rtt server start 8765 0"
+      "preLaunchTask": "rust: cargo build",
+      "name": "probe-rs Debug",
+      "cwd": "",
+      "connectUnderReset": false,
+      "chip": "nRF52840_xxAA",
+      "flashingConfig": {
+        "flashingEnabled": true,
+        "haltAfterReset": true
+      },
+      "coreConfigs": [
+        {
+          "coreIndex": 0,
+          "programBinary": "target/thumbv7em-none-eabihf/debug/nrf52-app",
+          "rttEnabled": true,
+        }
       ]
     }
   ]

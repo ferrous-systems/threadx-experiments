@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
 [target.thumbv7em-none-eabihf]
-runner = "probe-rs run --chip nRF52840_xxAA"
+runner = "probe-rs run --chip nRF52840_xxAA --allow-erase-all --log-format=oneline"
 rustflags = [
   "-C", "link-arg=-Tlink.x", # use the cortex-m-rt linker script
   "-C", "linker=flip-link", # adds stack overflow protection
@@ -13,3 +13,6 @@ rustflags = [
 [build]
 # cross-compile to this target
 target = "thumbv7em-none-eabihf" # = ARM Cortex-M4 with hard-float
+
+[env]
+DEFMT_LOG = "info"

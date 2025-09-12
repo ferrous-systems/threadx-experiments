@@ -20,6 +20,8 @@ defmt-rtt = "0.4"
 threadx-sys = { path = "../threadx-sys" }
 byte-strings = "0.3.1"
 static_cell = "2.0.0"
+critical-section = "1.2.0"
+embedded-hal = "0.2"
 
 # optimize code in both profiles
 [profile.dev]
