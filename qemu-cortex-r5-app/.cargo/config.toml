@@ -7,7 +7,12 @@ rustflags = [
     "-Clink-arg=-Tdefmt.x",
     "-Ctarget-cpu=cortex-r5",
 ]
-runner = "./qemu_run.cmd"
+runner = [
+    "qemu-run",
+    "--machine=versatileab",
+    "--cpu=cortex-r5f",
+    "--log-format={[{L}]%bold} {s} {({c:bold} {fff}:{l:1})%dimmed}"
+]
 
 [build]
 target = ["armv7r-none-eabihf"]

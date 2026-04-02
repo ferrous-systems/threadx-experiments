@@ -1,6 +1,6 @@
 //! Rust Demo for a QEMU Cortex-R machine, running ThreadX
 
-// SPDX-FileCopyrightText: Copyright (c) 2025 Ferrous Systems
+// SPDX-FileCopyrightText: Copyright (c) 2026 Ferrous Systems
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![no_std]
@@ -22,7 +22,7 @@ const DEMO_POOL_SIZE: usize = (DEMO_STACK_SIZE * 2) + 16384;
 ///
 /// ThreadX calls this function during scheduler start-up. We use it to create
 /// some threads.
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void) {
     defmt::info!("In tx_application_define()...");
 
@@ -155,7 +155,7 @@ extern "C" fn my_thread(value: u32) {
 /// The entry-point to the Rust application.
 ///
 /// It is called by the start-up code in `lib.rs`.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn kmain() {
     defmt::info!(
         "Hello, this is version {}!",
@@ -189,9 +189,9 @@ pub extern "C" fn kmain() {
 }
 
 /// Called from the main interrupt handler
-#[no_mangle]
+#[unsafe(no_mangle)]
 unsafe extern "C" fn handle_interrupt() {
-    extern "C" {
+    unsafe extern "C" {
         fn _tx_timer_interrupt();
     }
 

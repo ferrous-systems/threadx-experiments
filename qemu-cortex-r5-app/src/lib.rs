@@ -13,7 +13,7 @@ pub mod sp804_timer;
 use defmt_semihosting as _;
 
 // Ensure we pick up the critical-section impl
-use cortex_ar as _;
+use aarch32_cpu as _;
 
 core::arch::global_asm!(
     r#"

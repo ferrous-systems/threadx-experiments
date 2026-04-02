@@ -6,7 +6,7 @@
 #![no_main]
 #![no_std]
 
-use cortex_m_rt::entry;
+use cortex_m_rt::{entry, exception};
 use defmt_rtt as _;
 use embedded_hal::digital::v2::OutputPin;
 use nrf52840_hal::gpio::{Output, Pin, PushPull};
@@ -24,7 +24,7 @@ const SYSTICK_CYCLES: u32 = (SYSTEM_CLOCK / 100) - 1;
 static LED_PIN: critical_section::Mutex<core::cell::RefCell<Option<Pin<Output<PushPull>>>>> =
     critical_section::Mutex::new(core::cell::RefCell::new(None));
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void) {
     defmt::println!("In tx_application_define()...");
 
@@ -214,12 +214,15 @@ fn main() -> ! {
     panic!("Kernel exited");
 }
 
-#[no_mangle]
-unsafe extern "C" fn __tx_SysTickHandler() {
-    extern "C" {
+/// Systick exception handler
+#[exception]
+fn SysTick() {
+    unsafe extern "C" {
         fn _tx_timer_interrupt();
     }
     // Call into OS function (not in public API)
-    _tx_timer_interrupt();
+    unsafe {
+        _tx_timer_interrupt();
+    }
     // Can do any extra work here
 }

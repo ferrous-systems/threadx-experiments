@@ -10,7 +10,7 @@ license = "MIT OR Apache-2.0"
 description = "A simple ARMv7-R demo application that runs ThreadX in QEMU and compiles with Ferrocene"
 
 [dependencies]
-cortex-ar = { version = "0.2.0", features = ["critical-section-single-core", "defmt"] }
+aarch32-cpu = { version = "0.2.0", features = ["critical-section-single-core", "defmt"] }
 defmt = "1.0.1"
 defmt-semihosting = "0.3.0"
 embedded-alloc = "0.5.1"
