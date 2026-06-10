@@ -8,9 +8,9 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61a1c6b820a21052085271d8d3ef4bd0379894b525212b45405af905a2aae415"
 dependencies = [
- "arbitrary-int",
+ "arbitrary-int 2.1.1",
  "arm-targets",
- "bitbybit",
+ "bitbybit 2.0.0",
  "critical-section",
  "defmt",
  "num_enum",
@@ -25,6 +25,12 @@ checksum = "ddd31a130427c27518df266943a5308ed92d4b226cc639f5a8f1002816174301"
 dependencies = [
  "memchr",
 ]
+
+[[package]]
+name = "arbitrary-int"
+version = "1.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "825297538d77367557b912770ca3083f778a196054b3ee63b22673c4a3cae0a5"
 
 [[package]]
 name = "arbitrary-int"
@@ -67,6 +73,18 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex 1.3.0",
+ "syn",
+]
+
+[[package]]
+name = "bitbybit"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec187a89ab07e209270175faf9e07ceb2755d984954e58a2296e325ddece2762"
+dependencies = [
+ "arbitrary-int 1.3.0",
+ "proc-macro2",
+ "quote",
  "syn",
 ]
 
@@ -195,6 +213,29 @@ dependencies = [
  "critical-section",
  "defmt",
  "semihosting",
+]
+
+[[package]]
+name = "derive-mmio"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "005a6dabf68a87a460d3cb9b8e2fd5de3f474fc34e8d9451f5a1b6db518da143"
+dependencies = [
+ "defmt",
+ "derive-mmio-macro",
+ "rustversion",
+]
+
+[[package]]
+name = "derive-mmio-macro"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "584dc8e12e4aeb88000c2be8ef7db15657c817fba3e77999a24807d1efcdeefa"
+dependencies = [
+ "proc-macro-error2",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -331,6 +372,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "pl190-vic"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "791e2912e401c49ea502576ffe7c678ea23a7f9f9498e6d1d954dcf2808e3b17"
+dependencies = [
+ "arbitrary-int 2.1.1",
+ "bitbybit 1.4.0",
+ "critical-section",
+ "defmt",
+ "derive-mmio",
+]
+
+[[package]]
 name = "portable-atomic"
 version = "1.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -386,6 +440,7 @@ dependencies = [
  "defmt",
  "defmt-semihosting",
  "embedded-alloc",
+ "pl190-vic",
  "semihosting",
  "static_cell",
  "threadx-sys",

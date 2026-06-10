@@ -8,12 +8,14 @@
 
 use qemu_cortex_r5_app::{
     pl011_uart::Uart,
-    pl190_vic,
     sp804_timer::{self, Timer0},
 };
 use static_cell::StaticCell;
 
 static BUILD_SLUG: Option<&str> = option_env!("BUILD_SLUG");
+static PL190: pl190_vic::Pl190Driver =
+    unsafe { pl190_vic::Pl190Driver::new_static(qemu_cortex_r5_app::PL190_BASE_ADDR) };
+const TIMER_INTERRUPT: pl190_vic::InterruptId = pl190_vic::InterruptId::new(4);
 
 const DEMO_STACK_SIZE: usize = 16384;
 const DEMO_POOL_SIZE: usize = (DEMO_STACK_SIZE * 2) + 16384;
@@ -175,9 +177,12 @@ pub extern "C" fn kmain() {
 
     // Now we need to enable the Timer0 interrupt and connect it to IRQ on this core
     // It's on PIC interrupt 4.
-    let mut vic = unsafe { pl190_vic::Interrupt::new() };
-    vic.init();
-    vic.enable_interrupt(4);
+    PL190.enable_interrupt(TIMER_INTERRUPT);
+    PL190.set_handler(
+        TIMER_INTERRUPT,
+        pl190_vic::VectorId::new(0),
+        Some(handle_timer_interrupt),
+    );
 
     timer0.start();
 
@@ -188,19 +193,21 @@ pub extern "C" fn kmain() {
     panic!("Kernel exited");
 }
 
-/// Called from the main interrupt handler
-#[unsafe(no_mangle)]
-unsafe extern "C" fn handle_interrupt() {
+/// Call when there's a timer interrupt
+fn handle_timer_interrupt() {
     unsafe extern "C" {
-        fn _tx_timer_interrupt();
+        safe fn _tx_timer_interrupt();
     }
-
     if Timer0::is_pending() {
-        unsafe {
-            _tx_timer_interrupt();
-        }
+        _tx_timer_interrupt();
         Timer0::clear_interrupt();
     }
+}
+
+/// Called from the main interrupt handler in tx_initialize_low_level.S
+#[unsafe(no_mangle)]
+unsafe extern "C" fn handle_interrupt() {
+    PL190.irq_process();
 }
 
 /// Called when the application raises an unrecoverable `panic!`.

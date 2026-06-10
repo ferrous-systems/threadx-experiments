@@ -6,8 +6,9 @@
 #![no_std]
 
 pub mod pl011_uart;
-pub mod pl190_vic;
 pub mod sp804_timer;
+
+pub const PL190_BASE_ADDR: usize = 0x10140000;
 
 // Ensure we pick up the defmt-semihosting transport
 use defmt_semihosting as _;
