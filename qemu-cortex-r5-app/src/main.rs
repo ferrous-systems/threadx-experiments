@@ -26,6 +26,12 @@ const DEMO_POOL_SIZE: usize = (DEMO_STACK_SIZE * 2) + 16384;
 /// some threads.
 #[unsafe(no_mangle)]
 extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void) {
+    use threadx_sys::{
+        _tx_byte_allocate as tx_byte_allocate, _tx_byte_pool_create as tx_byte_pool_create,
+        _tx_thread_create as tx_thread_create, CHAR, TX_AUTO_START, TX_BYTE_POOL, TX_NO_TIME_SLICE,
+        TX_NO_WAIT, TX_SUCCESS, TX_THREAD,
+    };
+
     defmt::info!("In tx_application_define()...");
 
     // ThreadX requires a non-const pointer to char for the names, which it
@@ -33,14 +39,14 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
     // cast-away-const on a static string slice to appease the API.
 
     let byte_pool = {
-        static BYTE_POOL: StaticCell<threadx_sys::TX_BYTE_POOL> = StaticCell::new();
+        static BYTE_POOL: StaticCell<TX_BYTE_POOL> = StaticCell::new();
         static BYTE_POOL_STORAGE: StaticCell<[u8; DEMO_POOL_SIZE]> = StaticCell::new();
         let byte_pool = BYTE_POOL.uninit();
         let byte_pool_storage = BYTE_POOL_STORAGE.uninit();
         unsafe {
-            threadx_sys::_tx_byte_pool_create(
+            tx_byte_pool_create(
                 byte_pool.as_mut_ptr(),
-                c"byte-pool0".as_ptr() as *mut threadx_sys::CHAR,
+                c"byte-pool0".as_ptr() as *mut CHAR,
                 byte_pool_storage.as_mut_ptr() as *mut _,
                 DEMO_POOL_SIZE as u32,
             );
@@ -52,11 +58,11 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
     let thread0 = {
         let mut stack_pointer = core::ptr::null_mut();
         unsafe {
-            threadx_sys::_tx_byte_allocate(
+            tx_byte_allocate(
                 byte_pool,
                 &mut stack_pointer,
                 DEMO_STACK_SIZE as _,
-                threadx_sys::TX_NO_WAIT,
+                TX_NO_WAIT,
             );
         }
         defmt::debug!("Stack allocated @ 0x{=usize:08x}", stack_pointer as usize);
@@ -64,22 +70,22 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
             panic!("No space for stack");
         }
 
-        static THREAD_STORAGE: StaticCell<threadx_sys::TX_THREAD> = StaticCell::new();
+        static THREAD_STORAGE: StaticCell<TX_THREAD> = StaticCell::new();
         let thread = THREAD_STORAGE.uninit();
         unsafe {
-            let res = threadx_sys::_tx_thread_create(
+            let res = tx_thread_create(
                 thread.as_mut_ptr(),
-                c"thread0".as_ptr() as *mut threadx_sys::CHAR,
+                c"thread0".as_ptr() as *mut CHAR,
                 Some(my_thread),
                 entry,
                 stack_pointer,
                 DEMO_STACK_SIZE as _,
                 1,
                 1,
-                threadx_sys::TX_NO_TIME_SLICE,
-                threadx_sys::TX_AUTO_START,
+                TX_NO_TIME_SLICE,
+                TX_AUTO_START,
             );
-            if res != threadx_sys::TX_SUCCESS {
+            if res != TX_SUCCESS {
                 panic!("Failed to create thread: {}", res);
             }
             thread.assume_init_mut()
@@ -95,11 +101,11 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
     let thread1 = {
         let mut stack_pointer = core::ptr::null_mut();
         unsafe {
-            threadx_sys::_tx_byte_allocate(
+            tx_byte_allocate(
                 byte_pool,
                 &mut stack_pointer,
                 DEMO_STACK_SIZE as _,
-                threadx_sys::TX_NO_WAIT,
+                TX_NO_WAIT,
             );
         }
         defmt::debug!("Stack allocated @ 0x{=usize:08x}", stack_pointer as usize);
@@ -107,22 +113,22 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
             panic!("No space for stack");
         }
 
-        static THREAD_STORAGE2: StaticCell<threadx_sys::TX_THREAD> = StaticCell::new();
+        static THREAD_STORAGE2: StaticCell<TX_THREAD> = StaticCell::new();
         let thread = THREAD_STORAGE2.uninit();
         unsafe {
-            let res = threadx_sys::_tx_thread_create(
+            let res = tx_thread_create(
                 thread.as_mut_ptr(),
-                c"thread1".as_ptr() as *mut threadx_sys::CHAR,
+                c"thread1".as_ptr() as *mut CHAR,
                 Some(my_thread),
                 entry,
                 stack_pointer,
                 DEMO_STACK_SIZE as _,
                 1,
                 1,
-                threadx_sys::TX_NO_TIME_SLICE,
-                threadx_sys::TX_AUTO_START,
+                TX_NO_TIME_SLICE,
+                TX_AUTO_START,
             );
-            if res != threadx_sys::TX_SUCCESS {
+            if res != TX_SUCCESS {
                 panic!("Failed to create thread: {}", res);
             }
             thread.assume_init_mut()
