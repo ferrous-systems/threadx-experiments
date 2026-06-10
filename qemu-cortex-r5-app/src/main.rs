@@ -143,17 +143,19 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
 
 /// A function we execute in its own thread.
 extern "C" fn my_thread(value: u32) {
-    defmt::info!("I am my_thread({=u32:08x})", value);
+    defmt::info!("Starting my_thread({=u32:08x})", value);
     let mut thread_counter: u64 = 0;
     loop {
         thread_counter += 1;
+
+        defmt::debug!("my_thread({=u32:08x}) is sleeping...", value);
 
         unsafe {
             threadx_sys::_tx_thread_sleep(100);
         }
 
         defmt::info!(
-            "I am my_thread({=u32:08x}), count = {=u64}",
+            "my_thread({=u32:08x}) says count = {=u64}",
             value,
             thread_counter
         );
