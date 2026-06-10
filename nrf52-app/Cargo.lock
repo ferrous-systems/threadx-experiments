@@ -449,7 +449,7 @@ dependencies = [
  "fixed",
  "heapless 0.9.2",
  "nrf52840-hal",
- "panic-probe",
+ "semihosting",
  "static_cell",
  "threadx-sys",
 ]
@@ -473,16 +473,6 @@ dependencies = [
  "cortex-m",
  "cortex-m-rt",
  "vcell",
-]
-
-[[package]]
-name = "panic-probe"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd402d00b0fb94c5aee000029204a46884b1262e0c443f166d86d2c0747e1a1a"
-dependencies = [
- "cortex-m",
- "defmt",
 ]
 
 [[package]]
@@ -590,6 +580,12 @@ checksum = "138e3e0acb6c9fb258b19b67cb8abd63c00679d2851805ea151465464fe9030a"
 dependencies = [
  "semver",
 ]
+
+[[package]]
+name = "semihosting"
+version = "0.1.25"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8e4abf97879f4e80db69a9fba7bd64998e9bdad25f58ef045a778e191172fd4"
 
 [[package]]
 name = "semver"

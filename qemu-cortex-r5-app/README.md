@@ -34,7 +34,7 @@ cargo run --release
 
 You must have `qemu-system-arm` in your system's PATH. You will also need
 `arm-none-eabi-gcc` in your system's PATH, so this project can automatically
-compile ThreadX (which is expected in `../threadx`). Our runner also requires `defmt-print`.
+compile ThreadX (which is expected in `../threadx`). Our runner also requires `qemu-run`.
 
 If you have Ferrocene available, you can also do:
 
@@ -43,32 +43,30 @@ criticalup install
 criticalup run cargo run --release
 ```
 
-You will see something like:
+Either way, you will see something like:
 
 ```console
 $ cargo run --release
     Finished `release` profile [optimized + debuginfo] target(s) in 0.3s
      Running `qemu-run --machine=versatileab --cpu=cortex-r5f '--log-format={[{L}]%bold} {s} {({c:bold} {fff}:{l:1})%dimmed}' target/armv7r-none-eabihf/debug/qemu-cortex-r5-app`
-[INFO ] Hello, this is version unknown! (qemu_cortex_r5_app src/main.rs:169)
-[INFO ] In tx_application_define()... (qemu_cortex_r5_app src/main.rs:34)
-[DEBUG] Stack allocated @ 0x00007dac (qemu_cortex_r5_app src/main.rs:67)
-[DEBUG] Thread spawned (entry=12345678) @ 0x00007c34 (qemu_cortex_r5_app src/main.rs:93)
-[DEBUG] Stack allocated @ 0x0000bdb4 (qemu_cortex_r5_app src/main.rs:110)
-[DEBUG] Thread spawned entry=aabbccdd @ 0x00007cec (qemu_cortex_r5_app src/main.rs:136)
-[INFO ] Starting my_thread(12345678) (qemu_cortex_r5_app src/main.rs:145)
-[DEBUG] my_thread(12345678) is sleeping... (qemu_cortex_r5_app src/main.rs:150)
-[INFO ] Starting my_thread(aabbccdd) (qemu_cortex_r5_app src/main.rs:145)
-[DEBUG] my_thread(aabbccdd) is sleeping... (qemu_cortex_r5_app src/main.rs:150)
-[INFO ] my_thread(12345678) says count = 1 (qemu_cortex_r5_app src/main.rs:156)
-[DEBUG] my_thread(12345678) is sleeping... (qemu_cortex_r5_app src/main.rs:150)
-[INFO ] my_thread(aabbccdd) says count = 1 (qemu_cortex_r5_app src/main.rs:156)
-[DEBUG] my_thread(aabbccdd) is sleeping... (qemu_cortex_r5_app src/main.rs:150)
-[INFO ] my_thread(12345678) says count = 2 (qemu_cortex_r5_app src/main.rs:156)
-[DEBUG] my_thread(12345678) is sleeping... (qemu_cortex_r5_app src/main.rs:150)
-[INFO ] my_thread(aabbccdd) says count = 2 (qemu_cortex_r5_app src/main.rs:156)
-[DEBUG] my_thread(aabbccdd) is sleeping... (qemu_cortex_r5_app src/main.rs:150)
-^Cqemu-system-arm: terminating on signal 2 from pid 56574 (<unknown process>)
-------------------------------------------------------------------------
+[INFO ] Hello, this is version unknown! (qemu_cortex_r5_app src/main.rs:171)
+[INFO ] Entering ThreadX kernel... (qemu_cortex_r5_app src/main.rs:198)
+[DEBUG] In tx_application_define()... (qemu_cortex_r5_app src/main.rs:35)
+[DEBUG] Stack allocated @ 0x0000ab48 (qemu_cortex_r5_app src/main.rs:68)
+[DEBUG] Thread spawned (entry=12345678) @ 0x0000a9d0 (qemu_cortex_r5_app src/main.rs:94)
+[DEBUG] Stack allocated @ 0x0000eb50 (qemu_cortex_r5_app src/main.rs:111)
+[DEBUG] Thread spawned entry=aabbccdd @ 0x0000aa88 (qemu_cortex_r5_app src/main.rs:137)
+[INFO ] Starting my_thread(12345678) (qemu_cortex_r5_app src/main.rs:146)
+[DEBUG] my_thread(12345678) is sleeping... (qemu_cortex_r5_app src/main.rs:152)
+[INFO ] Starting my_thread(aabbccdd) (qemu_cortex_r5_app src/main.rs:146)
+[DEBUG] my_thread(aabbccdd) is sleeping... (qemu_cortex_r5_app src/main.rs:152)
+[INFO ] my_thread(12345678) says count = 1 (qemu_cortex_r5_app src/main.rs:158)
+[DEBUG] my_thread(12345678) is sleeping... (qemu_cortex_r5_app src/main.rs:152)
+[INFO ] my_thread(aabbccdd) says count = 1 (qemu_cortex_r5_app src/main.rs:158)
+[DEBUG] my_thread(aabbccdd) is sleeping... (qemu_cortex_r5_app src/main.rs:152)
+[INFO ] my_thread(12345678) says count = 2 (qemu_cortex_r5_app src/main.rs:158)
+[DEBUG] my_thread(12345678) is sleeping... (qemu_cortex_r5_app src/main.rs:152)
+...
 ```
 
 Press `Ctrl-C` to quit `qemu-run`.

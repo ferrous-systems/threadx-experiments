@@ -25,7 +25,7 @@ This demo was tested on Ferrocene 26.02 and Rust 1.94. It may work with earlier 
 
 ## Building
 
-To build and run this project, simply run:
+Once you have the pre-requisites, to build and run this project, simply run:
 
 ```bash
 cargo run --release
@@ -36,7 +36,14 @@ details and installation instructions. You will also need `arm-none-eabi-gcc` in
 your system's PATH, so this project can automatically compile ThreadX (which it
 looks for in `../threadx`).
 
-You will see something like:
+If you have Ferrocene available, you can also do:
+
+```bash
+criticalup install
+criticalup run cargo run --release
+```
+
+Either way, you will see something like:
 
 ```console
 $ cargo run --release
@@ -46,16 +53,23 @@ $ cargo run --release
       Erasing ✔ 100% [####################]  12.00 KiB @  21.46 KiB/s (took 1s)
   Programming ✔ 100% [####################]  12.00 KiB @  15.23 KiB/s (took 1s)
      Finished in 1.46s
-[WARN ] Hello, this is version unknown! (nrf52_app nrf52-app/src/main.rs:170)
-[INFO ] Entering ThreadX kernel... (nrf52_app nrf52-app/src/main.rs:209)
-In tx_application_define()...
-[INFO ] Thread spawned (entry=12345678) @ 0x200373fc (nrf52_app nrf52-app/src/main.rs:88)
-[INFO ] Thread spawned (entry=aabbccdd) @ 0x200374b4 (nrf52_app nrf52-app/src/main.rs:131)
-[INFO ] I am my_thread(12345678) (nrf52_app nrf52-app/src/main.rs:139)
-[INFO ] I am my_thread(aabbccdd) (nrf52_app nrf52-app/src/main.rs:139)
-[INFO ] I am my_thread(12345678), count = 1 (nrf52_app nrf52-app/src/main.rs:164)
-[INFO ] I am my_thread(aabbccdd), count = 1 (nrf52_app nrf52-app/src/main.rs:164)
-[INFO ] I am my_thread(12345678), count = 2 (nrf52_app nrf52-app/src/main.rs:164)
+[INFO ] Hello, this is version unknown! (nrf52_app nrf52-app/src/main.rs:189)
+[INFO ] Entering ThreadX kernel... (nrf52_app nrf52-app/src/main.rs:228)
+[DEBUG] In tx_application_define()... (nrf52_app nrf52-app/src/main.rs:38)
+[DEBUG] Stack allocated @ 0x20037574 (nrf52_app nrf52-app/src/main.rs:71)
+[DEBUG] Thread spawned (entry=12345678) @ 0x200373fc (nrf52_app nrf52-app/src/main.rs:97)
+[DEBUG] Stack allocated @ 0x2003957c (nrf52_app nrf52-app/src/main.rs:114)
+[DEBUG] Thread spawned entry=aabbccdd @ 0x200374b4 (nrf52_app nrf52-app/src/main.rs:140)
+[INFO ] Starting my_thread(12345678) (nrf52_app nrf52-app/src/main.rs:149)
+[DEBUG] my_thread(12345678) is sleeping... (nrf52_app nrf52-app/src/main.rs:170)
+[INFO ] Starting my_thread(aabbccdd) (nrf52_app nrf52-app/src/main.rs:149)
+[DEBUG] my_thread(aabbccdd) is sleeping... (nrf52_app nrf52-app/src/main.rs:170)
+[INFO ] my_thread(12345678) says count = 1 (nrf52_app nrf52-app/src/main.rs:176)
+[DEBUG] my_thread(12345678) is sleeping... (nrf52_app nrf52-app/src/main.rs:170)
+[INFO ] my_thread(aabbccdd) says count = 1 (nrf52_app nrf52-app/src/main.rs:176)
+[DEBUG] my_thread(aabbccdd) is sleeping... (nrf52_app nrf52-app/src/main.rs:170)
+[INFO ] my_thread(12345678) says count = 2 (nrf52_app nrf52-app/src/main.rs:176)
+[DEBUG] my_thread(12345678) is sleeping... (nrf52_app nrf52-app/src/main.rs:170)
 ...
 ```
 

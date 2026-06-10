@@ -32,7 +32,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
         TX_NO_WAIT, TX_SUCCESS, TX_THREAD,
     };
 
-    defmt::info!("In tx_application_define()...");
+    defmt::debug!("In tx_application_define()...");
 
     // ThreadX requires a non-const pointer to char for the names, which it
     // wil hold on to in the object, so it must have static lifetime. So we
@@ -144,6 +144,7 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
 /// A function we execute in its own thread.
 extern "C" fn my_thread(value: u32) {
     defmt::info!("Starting my_thread({=u32:08x})", value);
+    let sleep_time = if value == 0x12345678 { 100 } else { 200 };
     let mut thread_counter: u64 = 0;
     loop {
         thread_counter += 1;
@@ -151,7 +152,7 @@ extern "C" fn my_thread(value: u32) {
         defmt::debug!("my_thread({=u32:08x}) is sleeping...", value);
 
         unsafe {
-            threadx_sys::_tx_thread_sleep(100);
+            threadx_sys::_tx_thread_sleep(sleep_time);
         }
 
         defmt::info!(
@@ -164,9 +165,9 @@ extern "C" fn my_thread(value: u32) {
 
 /// The entry-point to the Rust application.
 ///
-/// It is called by the start-up code in `lib.rs`.
+/// It is called by the start-up code in lib.rs
 #[unsafe(no_mangle)]
-pub extern "C" fn kmain() {
+pub extern "C" fn kmain() -> ! {
     defmt::info!(
         "Hello, this is version {}!",
         BUILD_SLUG.unwrap_or("unknown")
@@ -194,6 +195,7 @@ pub extern "C" fn kmain() {
 
     timer0.start();
 
+    defmt::info!("Entering ThreadX kernel...");
     unsafe {
         threadx_sys::_tx_initialize_kernel_enter();
     }
@@ -224,7 +226,8 @@ unsafe extern "C" fn handle_interrupt() {
 /// breakpoint.
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
-    defmt::info!("PANIC: {:?}", defmt::Debug2Format(info));
+    aarch32_cpu::interrupt::disable();
+    defmt::info!("PANIC: {}", info);
     semihosting::process::exit(1);
 }
 

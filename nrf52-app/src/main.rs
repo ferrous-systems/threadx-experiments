@@ -1,16 +1,15 @@
 //! Rust Demo for the nRF52840, running ThreadX
 
-// SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
+// SPDX-FileCopyrightText: Copyright (c) 2026 Ferrous Systems
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![no_main]
 #![no_std]
+#![no_main]
 
 use cortex_m_rt::{entry, exception};
 use defmt_rtt as _;
 use embedded_hal::digital::v2::OutputPin;
 use nrf52840_hal::gpio::{Output, Pin, PushPull};
-use panic_probe as _;
 use static_cell::StaticCell;
 
 static BUILD_SLUG: Option<&str> = option_env!("BUILD_SLUG");
@@ -24,23 +23,33 @@ const SYSTICK_CYCLES: u32 = (SYSTEM_CLOCK / 100) - 1;
 static LED_PIN: critical_section::Mutex<core::cell::RefCell<Option<Pin<Output<PushPull>>>>> =
     critical_section::Mutex::new(core::cell::RefCell::new(None));
 
+/// Initialise our application.
+///
+/// ThreadX calls this function during scheduler start-up. We use it to create
+/// some threads.
 #[unsafe(no_mangle)]
 extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void) {
-    defmt::println!("In tx_application_define()...");
+    use threadx_sys::{
+        _tx_byte_allocate as tx_byte_allocate, _tx_byte_pool_create as tx_byte_pool_create,
+        _tx_thread_create as tx_thread_create, CHAR, TX_AUTO_START, TX_BYTE_POOL, TX_NO_TIME_SLICE,
+        TX_NO_WAIT, TX_SUCCESS, TX_THREAD,
+    };
+
+    defmt::debug!("In tx_application_define()...");
 
     // ThreadX requires a non-const pointer to char for the names, which it
     // wil hold on to in the object, so it must have static lifetime. So we
     // cast-away-const on a static string slice to appease the API.
 
     let byte_pool = {
-        static BYTE_POOL: StaticCell<threadx_sys::TX_BYTE_POOL> = StaticCell::new();
+        static BYTE_POOL: StaticCell<TX_BYTE_POOL> = StaticCell::new();
         static BYTE_POOL_STORAGE: StaticCell<[u8; DEMO_POOL_SIZE]> = StaticCell::new();
         let byte_pool = BYTE_POOL.uninit();
         let byte_pool_storage = BYTE_POOL_STORAGE.uninit();
         unsafe {
-            threadx_sys::_tx_byte_pool_create(
+            tx_byte_pool_create(
                 byte_pool.as_mut_ptr(),
-                c"byte-pool0".as_ptr() as *mut threadx_sys::CHAR,
+                c"byte-pool0".as_ptr() as *mut CHAR,
                 byte_pool_storage.as_mut_ptr() as *mut _,
                 DEMO_POOL_SIZE as u32,
             );
@@ -52,93 +61,94 @@ extern "C" fn tx_application_define(_first_unused_memory: *mut core::ffi::c_void
     let thread0 = {
         let mut stack_pointer = core::ptr::null_mut();
         unsafe {
-            threadx_sys::_tx_byte_allocate(
+            tx_byte_allocate(
                 byte_pool,
                 &mut stack_pointer,
                 DEMO_STACK_SIZE as _,
-                threadx_sys::TX_NO_WAIT,
+                TX_NO_WAIT,
             );
         }
-        defmt::debug!("Stack allocated @ {}", stack_pointer);
+        defmt::debug!("Stack allocated @ 0x{=usize:08x}", stack_pointer as usize);
         if stack_pointer.is_null() {
             panic!("No space for stack");
         }
 
-        static THREAD_STORAGE: StaticCell<threadx_sys::TX_THREAD> = StaticCell::new();
+        static THREAD_STORAGE: StaticCell<TX_THREAD> = StaticCell::new();
         let thread = THREAD_STORAGE.uninit();
         unsafe {
-            let res = threadx_sys::_tx_thread_create(
+            let res = tx_thread_create(
                 thread.as_mut_ptr(),
-                c"thread0".as_ptr() as *mut threadx_sys::CHAR,
+                c"thread0".as_ptr() as *mut CHAR,
                 Some(my_thread),
                 entry,
                 stack_pointer,
                 DEMO_STACK_SIZE as _,
                 1,
                 1,
-                threadx_sys::TX_NO_TIME_SLICE,
-                threadx_sys::TX_AUTO_START,
+                TX_NO_TIME_SLICE,
+                TX_AUTO_START,
             );
-            if res != threadx_sys::TX_SUCCESS {
+            if res != TX_SUCCESS {
                 panic!("Failed to create thread: {}", res);
             }
             thread.assume_init_mut()
         }
     };
-    defmt::info!(
-        "Thread spawned (entry={:08x}) @ {}",
+    defmt::debug!(
+        "Thread spawned (entry={=u32:08x}) @ 0x{=usize:08x}",
         entry,
-        thread0 as *const _
+        thread0 as *const _ as usize
     );
 
     let entry = 0xAABBCCDD;
     let thread1 = {
         let mut stack_pointer = core::ptr::null_mut();
         unsafe {
-            threadx_sys::_tx_byte_allocate(
+            tx_byte_allocate(
                 byte_pool,
                 &mut stack_pointer,
                 DEMO_STACK_SIZE as _,
-                threadx_sys::TX_NO_WAIT,
+                TX_NO_WAIT,
             );
         }
-        defmt::debug!("Stack allocated @ {:08x}", stack_pointer);
+        defmt::debug!("Stack allocated @ 0x{=usize:08x}", stack_pointer as usize);
         if stack_pointer.is_null() {
             panic!("No space for stack");
         }
 
-        static THREAD_STORAGE: StaticCell<threadx_sys::TX_THREAD> = StaticCell::new();
-        let thread = THREAD_STORAGE.uninit();
+        static THREAD_STORAGE2: StaticCell<TX_THREAD> = StaticCell::new();
+        let thread = THREAD_STORAGE2.uninit();
         unsafe {
-            let res = threadx_sys::_tx_thread_create(
+            let res = tx_thread_create(
                 thread.as_mut_ptr(),
-                c"thread1".as_ptr() as *mut threadx_sys::CHAR,
+                c"thread1".as_ptr() as *mut CHAR,
                 Some(my_thread),
                 entry,
                 stack_pointer,
                 DEMO_STACK_SIZE as _,
                 1,
                 1,
-                threadx_sys::TX_NO_TIME_SLICE,
-                threadx_sys::TX_AUTO_START,
+                TX_NO_TIME_SLICE,
+                TX_AUTO_START,
             );
-            if res != threadx_sys::TX_SUCCESS {
+            if res != TX_SUCCESS {
                 panic!("Failed to create thread: {}", res);
             }
             thread.assume_init_mut()
         }
     };
-    defmt::info!(
-        "Thread spawned (entry={:08x}) @ {}",
+    defmt::debug!(
+        "Thread spawned entry={=u32:08x} @ 0x{=usize:08x}",
         entry,
-        thread1 as *const _
+        thread1 as *const _ as usize
     );
 }
 
+/// A function we execute in its own thread.
 extern "C" fn my_thread(value: u32) {
-    defmt::info!("I am my_thread({:08x})", value);
-    let mut thread_counter = 0;
+    defmt::info!("Starting my_thread({=u32:08x})", value);
     let sleep_time = if value == 0x12345678 { 100 } else { 200 };
+    let mut thread_counter: u64 = 0;
     loop {
         thread_counter += 1;
 
@@ -157,17 +167,26 @@ extern "C" fn my_thread(value: u32) {
             });
         }
 
+        defmt::debug!("my_thread({=u32:08x}) is sleeping...", value);
+
         unsafe {
             threadx_sys::_tx_thread_sleep(sleep_time);
         }
 
-        defmt::info!("I am my_thread({:08x}), count = {}", value, thread_counter);
+        defmt::info!(
+            "my_thread({=u32:08x}) says count = {=u64}",
+            value,
+            thread_counter
+        );
     }
 }
 
+/// The entry-point to the Rust application
+///
+/// Called by the start-up code in cortex-m-rt
 #[entry]
 fn main() -> ! {
-    defmt::warn!(
+    defmt::info!(
         "Hello, this is version {}!",
         BUILD_SLUG.unwrap_or("unknown")
     );
@@ -226,3 +245,16 @@ fn SysTick() {
     }
     // Can do any extra work here
 }
+
+/// Called when the application raises an unrecoverable `panic!`.
+///
+/// Prints the panic to the console and then exits probe-rs using a semihosting
+/// breakpoint.
+#[panic_handler]
+fn panic(info: &core::panic::PanicInfo) -> ! {
+    cortex_m::interrupt::disable();
+    defmt::info!("PANIC: {}", info);
+    semihosting::process::exit(1);
+}
+
+// End of file
