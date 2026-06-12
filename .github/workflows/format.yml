@@ -3,7 +3,11 @@
 
 name: workflow-code-format
 run-name: Check code formatting
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+  workflow_dispatch: {}
 jobs:
   job-format-nrf52-app:
     runs-on: ubuntu-latest
