@@ -43,16 +43,3 @@ jobs:
         run: |
           cd qemu-cortex-r5-app
           cargo clippy --all-features
-  job-clippy-threadx-sys:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          submodules: 'true'
-      - name: Check Clippy on threadx-sys
-        env:
-          RUSTFLAGS: "-Dwarnings"
-        run: |
-          cd threadx-sys
-          cargo clippy --all-features

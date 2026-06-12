@@ -13,4 +13,4 @@ license-file = "../LICENCES/MIT.txt"
 [dependencies]
 
 [build-dependencies]
-bindgen = "0.69.1"
+bindgen = "0.72"

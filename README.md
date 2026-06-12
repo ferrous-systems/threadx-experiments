@@ -24,5 +24,5 @@ Thus repository contains:
 
 ## Licence
 
-* Copyright (c) 2025 Ferrous Systems
+* Copyright (c) 2026 Ferrous Systems
 * SPDX-License-Identifier: MIT OR Apache-2.0

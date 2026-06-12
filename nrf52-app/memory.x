@@ -9,5 +9,5 @@ MEMORY
   RAM   : ORIGIN = 0x20000000, LENGTH = 256K
 }
 
+/* Link to the raw assembly function, avoiding a Rust function prologue/epilogue */
 PROVIDE(PendSV = __tx_PendSVHandler);
-PROVIDE(SysTick = __tx_SysTickHandler);

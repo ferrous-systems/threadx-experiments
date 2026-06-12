@@ -7,7 +7,25 @@ This application is for the [nRF52840-DK], which includes an Arm Cortex-M4
 processor. This board was chosen because it is used in Ferrous System's Rust
 Trainings, is inexpensive, and includes a SEGGER J-Link on-board.
 
-To build and run this project, simply run:
+## Pre-requisites
+
+To build this demo you must:
+
+1. Run `git submodule update --init` to check-out the ThreadX source code
+2. Install `probe-rs` (see <https://probe.rs>)
+3. Install `arm-none-eabi-gcc` - such as from the [Arm GNU Toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain) or via `winget install gcc-arm-embedded`
+4. Install `libclang`, as specified in [the `bindgen` documentation](https://rust-lang.github.io/rust-bindgen/requirements.html) or via `winget install LLVM.LLVM`
+5. Add the `thumb7em-none-eabihf` target with `rustup`:
+
+  ```bash
+  rustup target add thumb7em-none-eabihf --toolchain=stable
+  ```
+
+This demo was tested on Ferrocene 26.02 and Rust 1.94. It may work with earlier versions.
+
+## Building
+
+Once you have the pre-requisites, to build and run this project, simply run:
 
 ```bash
 cargo run --release
@@ -18,43 +36,40 @@ details and installation instructions. You will also need `arm-none-eabi-gcc` in
 your system's PATH, so this project can automatically compile ThreadX (which it
 looks for in `../threadx`).
 
-You will see something like:
+If you have Ferrocene available, you can also do:
+
+```bash
+criticalup install
+criticalup run cargo run --release
+```
+
+Either way, you will see something like:
 
 ```console
 $ cargo run --release
    Compiling nrf52-app v0.0.0 (/Users/jonathan/Documents/ferrous-systems/threadx-experiments/nrf52-app)
     Finished `dev` profile [optimized + debuginfo] target(s) in 4.81s
-     Running `probe-rs run --chip nRF52840_xxAA target/thumbv7em-none-eabihf/debug/nrf52-app`
-      Erasing ✔ [00:00:00] [####################################] 12.00 KiB/12.00 KiB @ 33.03 KiB/s (eta 0s )
-  Programming ✔ [00:00:00] [####################################] 12.00 KiB/12.00 KiB @ 42.84 KiB/s (eta 0s )    Finished in 0.661s
-Hello, this is version unknown!
-└─ nrf52_app::__cortex_m_rt_main @ src/main.rs:151
-Entering ThreadX kernel...
-└─ nrf52_app::__cortex_m_rt_main @ src/main.rs:186
-In tx_application_define()...
-└─ nrf52_app::tx_application_define @ src/main.rs:26
-Stack allocated @ 0x20037444
-└─ nrf52_app::tx_application_define @ src/main.rs:59
-Thread spawned (entry=12345678) @ 0x2003f440
-└─ nrf52_app::tx_application_define @ src/main.rs:85
-Stack allocated @ 0x2003944c
-└─ nrf52_app::tx_application_define @ src/main.rs:102
-Thread spawned (entry=aabbccdd) @ 0x2003f4f8
-└─ nrf52_app::tx_application_define @ src/main.rs:128
-I am my_thread(12345678)
-└─ nrf52_app::my_thread @ src/main.rs:136
-I am my_thread(aabbccdd)
-└─ nrf52_app::my_thread @ src/main.rs:136
-I am my_thread(12345678), count = 1
-└─ nrf52_app::my_thread @ src/main.rs:145
-I am my_thread(aabbccdd), count = 1
-└─ nrf52_app::my_thread @ src/main.rs:145
-I am my_thread(12345678), count = 2
-└─ nrf52_app::my_thread @ src/main.rs:145
-I am my_thread(aabbccdd), count = 2
-└─ nrf52_app::my_thread @ src/main.rs:145
-I am my_thread(12345678), count = 3
-└─ nrf52_app::my_thread @ src/main.rs:145
+     Running `probe-rs run --chip nRF52840_xxAA --allow-erase-all --log-format=oneline target/thumbv7em-none-eabihf/debug/nrf52-app`
+      Erasing ✔ 100% [####################]  12.00 KiB @  21.46 KiB/s (took 1s)
+  Programming ✔ 100% [####################]  12.00 KiB @  15.23 KiB/s (took 1s)
+     Finished in 1.46s
+[INFO ] Hello, this is version unknown! (nrf52_app nrf52-app/src/main.rs:189)
+[INFO ] Entering ThreadX kernel... (nrf52_app nrf52-app/src/main.rs:228)
+[DEBUG] In tx_application_define()... (nrf52_app nrf52-app/src/main.rs:38)
+[DEBUG] Stack allocated @ 0x20037574 (nrf52_app nrf52-app/src/main.rs:71)
+[DEBUG] Thread spawned (entry=12345678) @ 0x200373fc (nrf52_app nrf52-app/src/main.rs:97)
+[DEBUG] Stack allocated @ 0x2003957c (nrf52_app nrf52-app/src/main.rs:114)
+[DEBUG] Thread spawned entry=aabbccdd @ 0x200374b4 (nrf52_app nrf52-app/src/main.rs:140)
+[INFO ] Starting my_thread(12345678) (nrf52_app nrf52-app/src/main.rs:149)
+[DEBUG] my_thread(12345678) is sleeping... (nrf52_app nrf52-app/src/main.rs:170)
+[INFO ] Starting my_thread(aabbccdd) (nrf52_app nrf52-app/src/main.rs:149)
+[DEBUG] my_thread(aabbccdd) is sleeping... (nrf52_app nrf52-app/src/main.rs:170)
+[INFO ] my_thread(12345678) says count = 1 (nrf52_app nrf52-app/src/main.rs:176)
+[DEBUG] my_thread(12345678) is sleeping... (nrf52_app nrf52-app/src/main.rs:170)
+[INFO ] my_thread(aabbccdd) says count = 1 (nrf52_app nrf52-app/src/main.rs:176)
+[DEBUG] my_thread(aabbccdd) is sleeping... (nrf52_app nrf52-app/src/main.rs:170)
+[INFO ] my_thread(12345678) says count = 2 (nrf52_app nrf52-app/src/main.rs:176)
+[DEBUG] my_thread(12345678) is sleeping... (nrf52_app nrf52-app/src/main.rs:170)
 ...
 ```
 
@@ -69,5 +84,5 @@ if you wish to adjust which ThreadX components are compiled in.
 
 ## Licence
 
-* Copyright (c) 2025 Ferrous Systems
+* Copyright (c) 2026 Ferrous Systems
 * SPDX-License-Identifier: MIT OR Apache-2.0
