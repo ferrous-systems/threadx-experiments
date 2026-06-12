@@ -26,10 +26,6 @@ jobs:
           slug=$(./describe.sh "${GITHUB_REF}")
           echo "Building with slug '${slug}'"
           echo "BUILD_SLUG=${slug}" >> "${GITHUB_ENV}"
-      - name: Check nRF52 App
-        run: |
-          cd nrf52-app
-          cargo check --target=thumbv7em-none-eabihf
       - name: Build nRF52 App
         run: |
           cd nrf52-app
@@ -57,10 +53,6 @@ jobs:
           slug=$(./describe.sh "${GITHUB_REF}")
           echo "Building with slug '${slug}'"
           echo "BUILD_SLUG=${slug}" >> "${GITHUB_ENV}"
-      - name: Check QEMU Cortex-R5 App
-        run: |
-          cd qemu-cortex-r5-app
-          cargo check --target=armv7r-none-eabihf
       - name: Build QEMU Cortex-R5 App
         run: |
           cd qemu-cortex-r5-app
