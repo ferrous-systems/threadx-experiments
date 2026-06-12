@@ -12,9 +12,8 @@ jobs:
         run: |
           sudo apt-get update -y && sudo apt-get -y install gcc-arm-none-eabi
       - name: Install tools
-        uses: taiki-e/install-action@v2
-        with:
-          tool: flip-link@0.1.7
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/knurling-rs/flip-link/releases/download/v0.1.12/flip-link-installer.sh | sh
       - name: Checkout repo
         uses: actions/checkout@v6
         with:
