@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Ferrous Systems
+# Copyright (c) 2026 Ferrous Systems
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
 name: workflow-code-format
@@ -9,32 +9,18 @@ on:
   pull_request: {}
   workflow_dispatch: {}
 jobs:
-  job-format-nrf52-app:
+  job-format:
+    strategy:
+      matrix:
+        build:
+          - package: nrf52-app
+          - package: qemu-cortex-r5-app
+          - package: threadx-sys
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
-      - name: Check Formatting on nRF52 App
-        run: |
-          cd nrf52-app
-          cargo fmt -- --check
-  job-format-qemu-cortex-r5-app:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v7
-      - name: Check Formatting on QEMU Cortex-R5 App
-        run: |
-          cd qemu-cortex-r5-app
-          cargo fmt -- --check
-  job-format-threadx-sys:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v7
-        with:
-          submodules: 'true'
       - name: Check Formatting
         run: |
-          cd threadx-sys
+          cd ${{ matrix.build.package }}
           cargo fmt -- --check
