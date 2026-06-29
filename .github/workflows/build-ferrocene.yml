@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Ferrous Systems
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-name: workflow-build-everything-ferrocene
-run-name: Build Everything with Ferrocene
+name: workflow-check-with-ferrocene
+run-name: Check with Ferrocene
 on:
   push:
     branches: [main]
@@ -49,3 +49,9 @@ jobs:
         with:
           name: ferrocene-${{ matrix.build.package}}
           path: ${{ matrix.build.package}}/target/${{ matrix.build.target }}/release/${{ matrix.build.package}}
+  job-all:
+    runs-on: ubuntu-latest
+    needs: [job-build]
+    if: failure()
+    steps:
+      - run: exit 1
