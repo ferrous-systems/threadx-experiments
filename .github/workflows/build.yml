@@ -19,7 +19,7 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -LsSf https://github.com/knurling-rs/flip-link/releases/download/v0.1.12/flip-link-installer.sh | sh
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: 'true'
       - name: Add rustup target
@@ -46,7 +46,7 @@ jobs:
         run: |
           sudo apt-get update -y && sudo apt-get -y install gcc-arm-none-eabi
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: 'true'
       - name: Add rustup target
