@@ -51,7 +51,16 @@ jobs:
           path: ${{ matrix.build.package}}/target/${{ matrix.build.target }}/release/${{ matrix.build.package}}
   job-all:
     runs-on: ubuntu-latest
-    needs: [job-build]
-    if: failure()
+    if: always()
+    # NOTE: Jobs that must pass this workflow must be listed here
+    needs:
+      - job-build
+    timeout-minutes: 2
     steps:
-      - run: exit 1
+      # Taken from: https://github.com/orgs/community/discussions/75568#discussioncomment-10351973
+      - name: Ensure all required jobs succeed
+        run: |
+          echo "Our needs:"
+          echo '${{ toJSON(needs) }}'
+          echo "Checking..."
+          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | all(.value.result == "success")'
