@@ -28,7 +28,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v7
         with:
-          submodules: 'true'
+          submodules: "true"
       - name: Add rustup target
         run: |
           rustup target add ${{ matrix.build.target }}
@@ -70,7 +70,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v7
         with:
-          submodules: 'true'
+          submodules: "true"
       - name: Install tools
         run: |
           sudo apt-get update -y && sudo apt-get -y install gcc-arm-none-eabi

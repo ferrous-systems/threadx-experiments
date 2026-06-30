@@ -26,7 +26,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v7
         with:
-          submodules: 'true'
+          submodules: "true"
       - name: Install Ferrocene
         env:
           CRITICALUP_TOKEN: ${{ secrets.CRITICALUP_TOKEN }}
