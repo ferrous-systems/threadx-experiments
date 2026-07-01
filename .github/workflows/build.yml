@@ -1,15 +1,22 @@
-# Copyright (c) 2023 Ferrous Systems
+# Copyright (c) 2026 Ferrous Systems
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-name: workflow-build-everything
-run-name: Build Everything
+name: workflow-check-with-upstream
+run-name: Check with Upstream
 on:
   push:
     branches: [main]
   pull_request: {}
   workflow_dispatch: {}
 jobs:
-  job-build-nrf52-app:
+  job-build:
+    strategy:
+      matrix:
+        build:
+          - package: nrf52-app
+            target: thumbv7em-none-eabihf
+          - package: qemu-cortex-r5-app
+            target: armv7r-none-eabihf
     runs-on: ubuntu-latest
     steps:
       - name: Install Arm C compiler
@@ -19,51 +26,91 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -LsSf https://github.com/knurling-rs/flip-link/releases/download/v0.1.12/flip-link-installer.sh | sh
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
-          submodules: 'true'
+          submodules: "true"
       - name: Add rustup target
         run: |
-          rustup target add thumbv7em-none-eabihf
+          rustup target add ${{ matrix.build.target }}
       - name: Find slug name
         run: |
           slug=$(./describe.sh "${GITHUB_REF}")
           echo "Building with slug '${slug}'"
           echo "BUILD_SLUG=${slug}" >> "${GITHUB_ENV}"
-      - name: Build nRF52 App
+      - name: Build
         run: |
-          cd nrf52-app
-          cargo build --target=thumbv7em-none-eabihf --release
-      - name: Upload nrf52-app
+          cd ${{ matrix.build.package }}
+          cargo build --target=${{ matrix.build.target }} --release
+      - name: Upload ${{ matrix.build.package }}
         uses: actions/upload-artifact@v7
         with:
-          name: nrf52-app
-          path: nrf52-app/target/thumbv7em-none-eabihf/release/nrf52-app
-  job-build-qemu-cortex-r5-app:
+          name: ${{ matrix.build.package }}
+          path: ${{ matrix.build.package }}/target/${{ matrix.build.target }}/release/${{ matrix.build.package }}
+  job-run-reuse-lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Arm C compiler
+      - name: Checkout repo
+        uses: actions/checkout@v7
+      - name: Install tools
+        run: |
+          pipx install reuse
+      - name: Check Licensing
+        run: |
+          reuse lint
+  job-clippy:
+    strategy:
+      matrix:
+        build:
+          - package: nrf52-app
+            target: thumbv7em-none-eabihf
+          - package: qemu-cortex-r5-app
+            target: armv7r-none-eabihf
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          submodules: "true"
+      - name: Install tools
         run: |
           sudo apt-get update -y && sudo apt-get -y install gcc-arm-none-eabi
-      - name: Checkout repo
-        uses: actions/checkout@v6
-        with:
-          submodules: 'true'
       - name: Add rustup target
         run: |
-          rustup target add armv7r-none-eabihf
-      - name: Find slug name
+          rustup target add ${{ matrix.build.target }}
+      - name: Check Clippy
         run: |
-          slug=$(./describe.sh "${GITHUB_REF}")
-          echo "Building with slug '${slug}'"
-          echo "BUILD_SLUG=${slug}" >> "${GITHUB_ENV}"
-      - name: Build QEMU Cortex-R5 App
+          cd ${{ matrix.build.package }}
+          cargo clippy --all-features
+  job-format:
+    strategy:
+      matrix:
+        build:
+          - package: nrf52-app
+          - package: qemu-cortex-r5-app
+          - package: threadx-sys
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+      - name: Check Formatting
         run: |
-          cd qemu-cortex-r5-app
-          cargo build --target=armv7r-none-eabihf --release
-      - name: Upload qemu-cortex-r5-app
-        uses: actions/upload-artifact@v7
-        with:
-          name: qemu-cortex-r5-app
-          path: qemu-cortex-r5-app/target/armv7r-none-eabihf/release/qemu-cortex-r5-app
+          cd ${{ matrix.build.package }}
+          cargo fmt -- --check
 
+  job-all:
+    runs-on: ubuntu-latest
+    if: always()
+    # NOTE: Jobs that must pass this workflow must be listed here
+    needs:
+      - job-build
+      - job-run-reuse-lint
+      - job-format
+    timeout-minutes: 2
+    steps:
+      # Taken from: https://github.com/orgs/community/discussions/75568#discussioncomment-10351973
+      - name: Ensure all required jobs succeed
+        run: |
+          echo "Our needs:"
+          echo '${{ toJSON(needs) }}'
+          echo "Checking..."
+          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | all(.value.result == "success")'
