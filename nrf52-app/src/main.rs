@@ -8,7 +8,7 @@
 
 use cortex_m_rt::{entry, exception};
 use defmt_rtt as _;
-use embedded_hal::digital::v2::OutputPin;
+use embedded_hal::digital::OutputPin;
 use nrf52840_hal::gpio::{Output, Pin, PushPull};
 use static_cell::StaticCell;
 
