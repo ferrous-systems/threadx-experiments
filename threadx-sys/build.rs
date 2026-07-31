@@ -14,6 +14,7 @@ fn main() {
     let (port, mcpu) = match target.as_str() {
         "thumbv8m.main-none-eabihf" => ("cortex_m33", "cortex-m33"),
         "thumbv7em-none-eabihf" => ("cortex_m4", "cortex-m4"),
+        "armv7r-none-eabihf" => ("cortex_r5", "cortex-r5"),
         other => {
             panic!("Unsupported architecture {:?}", other);
         }
