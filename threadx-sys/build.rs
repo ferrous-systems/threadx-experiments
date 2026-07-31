@@ -10,6 +10,14 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
+    let target = std::env::var("TARGET").expect("build script TARGET variable");
+    let (port, mcpu) = match target.as_str() {
+        "thumbv8m.main-none-eabihf" => ("cortex_m33", "cortex-m33"),
+        "thumbv7em-none-eabihf" => ("cortex_m4", "cortex-m4"),
+        other => {
+            panic!("Unsupported architecture {:?}", other);
+        }
+    };
     let threadx_path = PathBuf::from("../threadx");
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
@@ -22,7 +30,9 @@ fn main() {
         .clang_arg(format!("-I{}", threadx_path.join("common/inc").display()))
         .clang_arg(format!(
             "-I{}",
-            threadx_path.join("ports/cortex_m4/gnu/inc").display()
+            threadx_path
+                .join(format!("ports/{}/gnu/inc", port))
+                .display()
         ))
         // Some fake local include files
         .clang_arg("-I./include")
@@ -31,7 +41,7 @@ fn main() {
         // Set the target
         .clang_arg("--target=arm")
         .clang_arg("-mthumb")
-        .clang_arg("-mcpu=cortex-m4")
+        .clang_arg(format!("-mcpu={}", mcpu))
         // Use softfp
         .clang_arg("-mfloat-abi=soft")
         // We're no_std

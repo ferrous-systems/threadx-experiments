@@ -1,0 +1,28 @@
+// SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "probe-rs-debug",
+      "request": "launch",
+      "preLaunchTask": "rust: cargo build",
+      "name": "probe-rs Debug",
+      "cwd": "",
+      "connectUnderReset": false,
+      "chip": "STM32U5A5ZJ",
+      "flashingConfig": {
+        "flashingEnabled": true,
+        "haltAfterReset": true
+      },
+      "coreConfigs": [
+        {
+          "coreIndex": 0,
+          "programBinary": "target/thumbv8m.main-none-eabihf/debug/stm32u5-app",
+          "rttEnabled": true,
+        }
+      ]
+    }
+  ]
+}

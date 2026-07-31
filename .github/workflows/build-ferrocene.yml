@@ -15,6 +15,8 @@ jobs:
         build:
           - package: nrf52-app
             target: thumbv7em-none-eabihf
+          - package: stm32u5-app
+            target: thumbv8m.main-none-eabihf
           - package: qemu-cortex-r5-app
             target: armv7r-none-eabihf
     runs-on: ubuntu-latest
@@ -38,13 +40,13 @@ jobs:
           slug=$(./describe.sh "${GITHUB_REF}")
           echo "Building with slug '${slug}'"
           echo "BUILD_SLUG=${slug}" >> "${GITHUB_ENV}"
-      - name: Build nRF52 App
+      - name: Build package
         run: |
           cd ${{ matrix.build.package }}
           criticalup run rustc --version
           criticalup run cargo --version
           criticalup run cargo build --release
-      - name: Upload nrf52-app
+      - name: Upload binary
         uses: actions/upload-artifact@v7
         with:
           name: ferrocene-${{ matrix.build.package}}
