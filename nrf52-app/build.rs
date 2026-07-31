@@ -223,10 +223,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         .files(TX_COMMON_FILES.iter().map(|&s| tx_common_dir.join(s)))
         .compile("threadx");
 
-    cc::Build::new()
-        .file("src/tx_low_level.S")
-        .compile("tx_low_level");
-    println!("cargo:rerun-if-changed=src/tx_low_level.S");
+    // Use cortex-m-rt's link.x as the linker script
+    println!("cargo:rustc-link-arg=-Tlink.x");
+    // Use defmt's linker script add-on
+    println!("cargo:rustc-link-arg=-Tdefmt.x");
+    // Force alignment
+    println!("cargo:rustc-link-arg=-nmagic");
 
     Ok(())
 }

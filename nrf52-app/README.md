@@ -15,11 +15,6 @@ To build this demo you must:
 2. Install `probe-rs` (see <https://probe.rs>)
 3. Install `arm-none-eabi-gcc` - such as from the [Arm GNU Toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain) or via `winget install gcc-arm-embedded`
 4. Install `libclang`, as specified in [the `bindgen` documentation](https://rust-lang.github.io/rust-bindgen/requirements.html) or via `winget install LLVM.LLVM`
-5. Add the `thumb7em-none-eabihf` target with `rustup`:
-
-  ```bash
-  rustup target add thumb7em-none-eabihf --toolchain=stable
-  ```
 
 This demo was tested on Ferrocene 26.02 and Rust 1.94. It may work with earlier versions.
 

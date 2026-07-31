@@ -6,6 +6,7 @@
 #![no_std]
 #![no_main]
 
+use cortex_m::peripheral::scb::SystemHandler;
 use cortex_m_rt::{entry, exception};
 use defmt_rtt as _;
 use embedded_hal::digital::OutputPin;
@@ -225,6 +226,17 @@ fn main() -> ! {
         .set_clock_source(cortex_m::peripheral::syst::SystClkSource::Core);
     cp.SYST.enable_counter();
 
+    // set exception priorities as required by ThreadX
+    unsafe {
+        cp.SCB.set_priority(SystemHandler::MemoryManagement, 0);
+        cp.SCB.set_priority(SystemHandler::BusFault, 0);
+        cp.SCB.set_priority(SystemHandler::UsageFault, 0);
+        cp.SCB.set_priority(SystemHandler::SVCall, 0xFF);
+        cp.SCB.set_priority(SystemHandler::DebugMonitor, 0);
+        cp.SCB.set_priority(SystemHandler::PendSV, 0xFF);
+        cp.SCB.set_priority(SystemHandler::SysTick, 0x40);
+    }
+
     defmt::info!("Entering ThreadX kernel...");
     unsafe {
         threadx_sys::_tx_initialize_kernel_enter();
@@ -255,6 +267,28 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     cortex_m::interrupt::disable();
     defmt::info!("PANIC: {}", info);
     semihosting::process::exit(1);
+}
+
+/// Do ThreadX low-level init
+///
+/// This is a Rust version of `tx_low_level.S` from the GNU Cortex-M33 example
+#[unsafe(no_mangle)]
+pub extern "C" fn _tx_initialize_low_level() {
+    unsafe extern "C" {
+        static __vector_table: u32;
+        static __sheap: u32;
+        static mut _tx_thread_system_stack_ptr: u32;
+        static mut _tx_initialize_unused_memory: u32;
+    }
+    let vector_table_ptr = &raw const __vector_table;
+    let stack_ptr_var = &raw mut _tx_thread_system_stack_ptr;
+    let heap_start = &raw const __sheap;
+    let unused_mem_ptr = &raw mut _tx_initialize_unused_memory;
+    unsafe {
+        let init_stack_pointer = vector_table_ptr.read();
+        stack_ptr_var.write_volatile(init_stack_pointer);
+        unused_mem_ptr.write_volatile(heap_start.offset(1) as u32);
+    }
 }
 
 // End of file
