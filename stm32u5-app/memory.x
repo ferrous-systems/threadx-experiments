@@ -6,10 +6,10 @@
 */
 
 MEMORY {
-  /* Nonecure Code uses the first flash bank, nonsecure alias */
+  /* Uses the first flash bank, nonsecure alias */
   FLASH (rx): ORIGIN = 0x08000000, LENGTH = 2M
-  /* Nonecure Code uses SRAM3, nonsecure alias */
-  RAM (rwx) : ORIGIN = 0x200D0000, LENGTH = 832K
+  /* Uses SRAM1, nonsecure alias */
+  RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 768K
 }
 
 /* Link to the raw assembly function, avoiding a Rust function prologue/epilogue */
