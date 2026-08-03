@@ -16,5 +16,6 @@ packages = [
     "flip-link-${rustc-host}",
     "llvm-tools-${rustc-host}",
     "rust-std-thumbv7em-none-eabihf",
+    "rust-std-thumbv8m.main-none-eabihf",
     "rust-std-armv7r-none-eabihf",
 ]
