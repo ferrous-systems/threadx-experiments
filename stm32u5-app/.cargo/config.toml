@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: Copyright (c) 2023 Ferrous Systems
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[target.thumbv8m.main-none-eabihf]
+runner = "probe-rs run --chip STM32U5A5ZJ"
+
+[build]
+# cross-compile to this target
+target = "thumbv8m.main-none-eabihf" # = ARM Cortex-M33 with hard-float
+
+[env]
+DEFMT_LOG = "debug"

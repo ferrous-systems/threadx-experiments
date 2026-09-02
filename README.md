@@ -14,6 +14,7 @@ git submodule update --init
 Thus repository contains:
 
 * [`nrf52-app`](./nrf52-app/) - a Rust application for the nRF52 which uses ThreadX as its kernel; it automatically compiles ThreadX to a static library and links to it. You need an nRF52840-DK board to run this binary.
+* [`stm32u5-app`](./stm32u5-app/) - a Rust application for the STM32U5A5 which uses ThreadX as its kernel; it automatically compiles ThreadX to a static library and links to it. You need an NUCLEO-U5A5ZJ-Q board to run this binary. This app runs in NonSecure state, so TZEN=0 must be set, or you must have a secure loader installed.
 * [`qemu-cortex-r5-app`](./qemu-cortex-r5-app/) - a Rust application for the Arm Versatile Application Baseboard which uses ThreadX as its kernel; it automatically compiles ThreadX to a static library and links to it. You can use `qemu-system-arm` to run this binary in an emulated version of the Arm Versatile Application Board.
 * [`threadx-sys`](./threadx-sys/) - a library crate that uses [`bindgen`] to automatically generate bindings to the ThreadX APIs.
 * [`threadx`](./threadx) - a git submodule pointing at <https://github.com/eclipse-threadx/threadx.git>, unmodified.

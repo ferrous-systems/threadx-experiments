@@ -1,4 +1,4 @@
-//! Rust Demo for the nRF52840, running ThreadX
+//! Rust Demo for the STM32U5A5 in Nonsecure State, running ThreadX
 
 // SPDX-FileCopyrightText: Copyright (c) 2026 Ferrous Systems
 // SPDX-License-Identifier: MIT OR Apache-2.0
@@ -9,20 +9,16 @@
 use cortex_m::peripheral::scb::SystemHandler;
 use cortex_m_rt::{entry, exception};
 use defmt_rtt as _;
-use embedded_hal::digital::OutputPin;
-use nrf52840_hal::gpio::{Output, Pin, PushPull};
 use static_cell::StaticCell;
+use stm32u5 as _;
 
 static BUILD_SLUG: Option<&str> = option_env!("BUILD_SLUG");
 
-const DEMO_STACK_SIZE: usize = 8192;
+const DEMO_STACK_SIZE: usize = 16384;
 const DEMO_POOL_SIZE: usize = (DEMO_STACK_SIZE * 2) + 16384;
 
-const SYSTEM_CLOCK: u32 = 64_000_000;
+const SYSTEM_CLOCK: u32 = 4_000_000;
 const SYSTICK_CYCLES: u32 = (SYSTEM_CLOCK / 100) - 1;
-
-static LED_PIN: critical_section::Mutex<core::cell::RefCell<Option<Pin<Output<PushPull>>>>> =
-    critical_section::Mutex::new(core::cell::RefCell::new(None));
 
 /// Initialise our application.
 ///
@@ -153,21 +149,6 @@ extern "C" fn my_thread(value: u32) {
     loop {
         thread_counter += 1;
 
-        // try setting a breakpoint here
-        if value == 0x12345678 {
-            // blink the LED
-            critical_section::with(|cs| {
-                let mut led_pin = LED_PIN.borrow_ref_mut(cs);
-                if let Some(led_pin) = led_pin.as_mut() {
-                    if thread_counter & 1 == 0 {
-                        led_pin.set_high().unwrap();
-                    } else {
-                        led_pin.set_low().unwrap();
-                    }
-                }
-            });
-        }
-
         defmt::debug!("my_thread({=u32:08x}) is sleeping...", value);
 
         unsafe {
@@ -192,27 +173,7 @@ fn main() -> ! {
         BUILD_SLUG.unwrap_or("unknown")
     );
 
-    let pp = nrf52840_hal::pac::Peripherals::take().unwrap();
     let mut cp = cortex_m::Peripherals::take().unwrap();
-
-    let clocks = nrf52840_hal::Clocks::new(pp.CLOCK);
-    let clocks = clocks.enable_ext_hfosc();
-    let clocks =
-        clocks.set_lfclk_src_external(nrf52840_hal::clocks::LfOscConfiguration::NoExternalNoBypass);
-    let clocks = clocks.start_lfclk();
-    let _clocks = clocks.enable_ext_hfosc();
-
-    let pins = nrf52840_hal::gpio::p0::Parts::new(pp.P0);
-    let mut led = pins
-        .p0_13
-        .degrade()
-        .into_push_pull_output(nrf52840_hal::gpio::Level::High);
-
-    let _ = led.set_low();
-    critical_section::with(|cs| {
-        let mut led_pin = LED_PIN.borrow_ref_mut(cs);
-        *led_pin = Some(led);
-    });
 
     // Enable cycle counter
     cp.DCB.enable_trace();
@@ -231,6 +192,7 @@ fn main() -> ! {
         cp.SCB.set_priority(SystemHandler::MemoryManagement, 0);
         cp.SCB.set_priority(SystemHandler::BusFault, 0);
         cp.SCB.set_priority(SystemHandler::UsageFault, 0);
+        cp.SCB.set_priority(SystemHandler::SecureFault, 0);
         cp.SCB.set_priority(SystemHandler::SVCall, 0xFF);
         cp.SCB.set_priority(SystemHandler::DebugMonitor, 0);
         cp.SCB.set_priority(SystemHandler::PendSV, 0xFF);
@@ -251,6 +213,7 @@ fn SysTick() {
     unsafe extern "C" {
         fn _tx_timer_interrupt();
     }
+
     // Call into OS function (not in public API)
     unsafe {
         _tx_timer_interrupt();

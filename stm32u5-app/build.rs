@@ -6,12 +6,15 @@
 use std::{env, error::Error, fs, path::PathBuf};
 
 static TX_PORT_FILES: &[&str] = &[
-    "tx_thread_stack_build.S",
-    "tx_thread_schedule.S",
-    "tx_thread_system_return.S",
-    "tx_thread_context_save.S",
+    "tx_misra.S",
     "tx_thread_context_restore.S",
+    "tx_thread_context_save.S",
     "tx_thread_interrupt_control.S",
+    "tx_thread_interrupt_disable.S",
+    "tx_thread_interrupt_restore.S",
+    "tx_thread_schedule.S",
+    "tx_thread_stack_build.S",
+    "tx_thread_system_return.S",
     "tx_timer_interrupt.S",
 ];
 
@@ -214,11 +217,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Build our ThreadX static library
     let tx_common_dir = crate_dir.join("../threadx/common/src");
     let tx_common_inc = crate_dir.join("../threadx/common/inc");
-    let tx_port_dir = crate_dir.join("../threadx/ports/cortex_m4/gnu/src");
-    let tx_port_inc = crate_dir.join("../threadx/ports/cortex_m4/gnu/inc");
+    let tx_port_dir = crate_dir.join("../threadx/ports/cortex_m33/gnu/src");
+    let tx_port_inc = crate_dir.join("../threadx/ports/cortex_m33/gnu/inc");
     cc::Build::new()
         .include(&tx_common_inc)
         .include(&tx_port_inc)
+        .define("TX_SINGLE_MODE_NON_SECURE", "1")
         .files(TX_PORT_FILES.iter().map(|&s| tx_port_dir.join(s)))
         .files(TX_COMMON_FILES.iter().map(|&s| tx_common_dir.join(s)))
         .compile("threadx");

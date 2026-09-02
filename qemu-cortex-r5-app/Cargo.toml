@@ -10,11 +10,11 @@ license = "MIT OR Apache-2.0"
 description = "A simple ARMv7-R demo application that runs ThreadX in QEMU and compiles with Ferrocene"
 
 [dependencies]
-aarch32-cpu = { version = "0.3.0", features = ["critical-section-single-core", "defmt"] }
-defmt = "1.0.1"
-defmt-semihosting = "0.3.0"
-embedded-alloc = "0.5.1"
-pl190-vic = "0.1.2"
+aarch32-cpu = { version = "0.4", features = ["critical-section-single-core", "defmt"] }
+defmt = "1.1"
+defmt-semihosting = "0.3"
+embedded-alloc = "0.7"
+pl190-vic = "0.2"
 semihosting = "0.1.20"
 static_cell = "2.1.0"
 threadx-sys = { path = "../threadx-sys" }
