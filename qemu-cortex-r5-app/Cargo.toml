@@ -13,7 +13,6 @@ description = "A simple ARMv7-R demo application that runs ThreadX in QEMU and c
 aarch32-cpu = { version = "0.4", features = ["critical-section-single-core", "defmt"] }
 defmt = "1.1"
 defmt-semihosting = "0.3"
-embedded-alloc = "0.7"
 pl190-vic = "0.2"
 semihosting = "0.1.20"
 static_cell = "2.1.0"
