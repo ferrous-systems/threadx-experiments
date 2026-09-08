@@ -6,11 +6,9 @@
 #![no_std]
 #![no_main]
 
-use qemu_cortex_r5_app::{
-    pl011_uart::Uart,
-    sp804_timer::{self, Timer0},
-};
 use static_cell::StaticCell;
+
+use qemu_cortex_r5_app::sp804_timer;
 
 static BUILD_SLUG: Option<&str> = option_env!("BUILD_SLUG");
 static PL190: pl190_vic::Pl190Driver =
@@ -177,11 +175,8 @@ pub extern "C" fn kmain() -> ! {
         BUILD_SLUG.unwrap_or("unknown")
     );
 
-    // Create a UART
-    let _uart0 = unsafe { Uart::new_uart0() };
-
     // Temporarily create a mutable timer driver so we can configure it...
-    let mut timer0 = unsafe { Timer0::new_timer0() };
+    let mut timer0 = unsafe { sp804_timer::Timer0::new_timer0() };
     timer0.init(
         CLOCKS_PER_TICK,
         sp804_timer::Mode::AutoReload,
