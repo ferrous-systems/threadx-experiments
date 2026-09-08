@@ -11,7 +11,7 @@ runner = [
     "qemu-run",
     "--machine=versatileab",
     "--cpu=cortex-r5f",
-    "--log-format={[{L}]%bold} {s} {({c:bold} {fff}:{l:1})%dimmed}"
+    "--log-format=oneline"
 ]
 
 [build]
