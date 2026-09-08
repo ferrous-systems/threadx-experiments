@@ -6,19 +6,21 @@
 #![no_std]
 #![no_main]
 
-use qemu_cortex_r5_app::{
-    pl011_uart::Uart,
-    sp804_timer::{self, Timer0},
-};
 use static_cell::StaticCell;
+
+use qemu_cortex_r5_app::sp804_timer;
 
 static BUILD_SLUG: Option<&str> = option_env!("BUILD_SLUG");
 static PL190: pl190_vic::Pl190Driver =
     unsafe { pl190_vic::Pl190Driver::new_static(qemu_cortex_r5_app::PL190_BASE_ADDR) };
 const TIMER_INTERRUPT: pl190_vic::InterruptId = pl190_vic::InterruptId::new(4);
+static TIMER0: sp804_timer::Timer0 = unsafe { sp804_timer::Timer0::new_timer0() };
 
 const DEMO_STACK_SIZE: usize = 16384;
 const DEMO_POOL_SIZE: usize = (DEMO_STACK_SIZE * 2) + 16384;
+
+/// The SP804 timer runs at 1 MHz, and we want 100 Hz timer ticks
+const CLOCKS_PER_TICK: u32 = 1_000_000 / 100;
 
 /// Initialise our application.
 ///
@@ -173,13 +175,10 @@ pub extern "C" fn kmain() -> ! {
         BUILD_SLUG.unwrap_or("unknown")
     );
 
-    // Create a UART
-    let _uart0 = unsafe { Uart::new_uart0() };
-
-    // Create a timer
-    let mut timer0 = unsafe { Timer0::new_timer0() };
+    // Temporarily create a mutable timer driver so we can configure it...
+    let mut timer0 = unsafe { sp804_timer::Timer0::new_timer0() };
     timer0.init(
-        10_000,
+        CLOCKS_PER_TICK,
         sp804_timer::Mode::AutoReload,
         sp804_timer::Interrupts::Enabled,
     );
@@ -193,7 +192,11 @@ pub extern "C" fn kmain() -> ! {
         Some(handle_timer_interrupt),
     );
 
+    // Start timer after interrupts enabled
     timer0.start();
+
+    // use global TIMER0 from now on
+    drop(timer0);
 
     defmt::info!("Entering ThreadX kernel...");
     unsafe {
@@ -208,9 +211,9 @@ fn handle_timer_interrupt() {
     unsafe extern "C" {
         safe fn _tx_timer_interrupt();
     }
-    if Timer0::is_pending() {
+    if TIMER0.is_pending() {
         _tx_timer_interrupt();
-        Timer0::clear_interrupt();
+        TIMER0.clear_interrupt();
     }
 }
 
@@ -230,5 +233,22 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     defmt::info!("PANIC: {}", info);
     semihosting::process::exit(1);
 }
+
+/// Get the uptime in clock ticks
+fn uptime() -> u64 {
+    loop {
+        // need to check we don't hit a timer interrupt, so read timer ticks twice
+        let ticks1 = unsafe { threadx_sys::_tx_time_get() };
+        let fraction = TIMER0.timer_remaining();
+        let ticks2 = unsafe { threadx_sys::_tx_time_get() };
+
+        // no overflow, so calculate the total uptime
+        if ticks1 == ticks2 {
+            return (u64::from(ticks1) * u64::from(CLOCKS_PER_TICK)) + u64::from(fraction);
+        }
+    }
+}
+
+defmt::timestamp!("{=u64:tus}", uptime());
 
 // End of file
