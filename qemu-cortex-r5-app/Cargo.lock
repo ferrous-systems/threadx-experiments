@@ -8,9 +8,9 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "685b9d999a309934c295fce81bb0ab632351449ba87990588cef879521c8f2aa"
 dependencies = [
- "arbitrary-int 2.1.1",
+ "arbitrary-int 2.2.0",
  "arm-targets",
- "bitbybit 2.0.0",
+ "bitbybit 2.0.1",
  "critical-section",
  "defmt",
  "num_enum",
@@ -34,9 +34,9 @@ checksum = "825297538d77367557b912770ca3083f778a196054b3ee63b22673c4a3cae0a5"
 
 [[package]]
 name = "arbitrary-int"
-version = "2.1.1"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "993a810118f8f37e9c4411c86f1c4c940a09a7ab34b7bf2d88d06f50c553fab7"
+checksum = "0ab387a0c4143b4fd3804e193946e78c8ab16cf26c5fde2048e4ac3d618c3b64"
 dependencies = [
  "defmt",
 ]
@@ -90,9 +90,9 @@ dependencies = [
 
 [[package]]
 name = "bitbybit"
-version = "2.0.0"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71d2a3353d70ac1091a33cbf31fc7e77b19091538a7e306e3740712af19807ca"
+checksum = "bf218b839af0730012cc21856c4149789afde9ae6dc3078c7adaf311e8b76854"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -220,7 +220,17 @@ version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1579d07ce933dabc3d8fe06c529f9a743174bab8a5224b03fe9f0148b5b4c4e8"
 dependencies = [
- "derive-mmio-macro",
+ "derive-mmio-macro 0.6.2",
+ "rustversion",
+]
+
+[[package]]
+name = "derive-mmio"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "acd34ba795703e849ab4136e8886fa2140935e2e27640d22c7da6ef5796324af"
+dependencies = [
+ "derive-mmio-macro 0.8.0",
  "rustversion",
 ]
 
@@ -229,6 +239,17 @@ name = "derive-mmio-macro"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5090bbfffae089eb132236978c9ab39e3b17692f56836f1bd57822572ac030fe"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "derive-mmio-macro"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb3c030cba3e3eb0fac8a6877210e23e521535f725b72b137d1d5b8b0085c077"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -358,10 +379,10 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e8ad68805180b805e2b838c363afb6980738e4c0f42b90fe514ead7a26b3582"
 dependencies = [
- "arbitrary-int 2.1.1",
+ "arbitrary-int 2.2.0",
  "bitbybit 1.4.0",
  "critical-section",
- "derive-mmio",
+ "derive-mmio 0.6.2",
 ]
 
 [[package]]
@@ -394,9 +415,12 @@ name = "qemu-cortex-r5-app"
 version = "0.1.0"
 dependencies = [
  "aarch32-cpu",
+ "arbitrary-int 2.2.0",
+ "bitbybit 2.0.1",
  "cc",
  "defmt",
  "defmt-semihosting",
+ "derive-mmio 0.8.0",
  "pl190-vic",
  "semihosting",
  "static_cell",

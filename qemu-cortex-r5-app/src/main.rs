@@ -16,6 +16,7 @@ static BUILD_SLUG: Option<&str> = option_env!("BUILD_SLUG");
 static PL190: pl190_vic::Pl190Driver =
     unsafe { pl190_vic::Pl190Driver::new_static(qemu_cortex_r5_app::PL190_BASE_ADDR) };
 const TIMER_INTERRUPT: pl190_vic::InterruptId = pl190_vic::InterruptId::new(4);
+static TIMER0: sp804_timer::Timer0 = unsafe { sp804_timer::Timer0::new_timer0() };
 
 const DEMO_STACK_SIZE: usize = 16384;
 const DEMO_POOL_SIZE: usize = (DEMO_STACK_SIZE * 2) + 16384;
@@ -179,7 +180,7 @@ pub extern "C" fn kmain() -> ! {
     // Create a UART
     let _uart0 = unsafe { Uart::new_uart0() };
 
-    // Create the RTOS timer
+    // Temporarily create a mutable timer driver so we can configure it...
     let mut timer0 = unsafe { Timer0::new_timer0() };
     timer0.init(
         CLOCKS_PER_TICK,
@@ -196,7 +197,11 @@ pub extern "C" fn kmain() -> ! {
         Some(handle_timer_interrupt),
     );
 
+    // Start timer after interrupts enabled
     timer0.start();
+
+    // use global TIMER0 from now on
+    drop(timer0);
 
     defmt::info!("Entering ThreadX kernel...");
     unsafe {
@@ -211,9 +216,9 @@ fn handle_timer_interrupt() {
     unsafe extern "C" {
         safe fn _tx_timer_interrupt();
     }
-    if Timer0::is_pending() {
+    if TIMER0.is_pending() {
         _tx_timer_interrupt();
-        Timer0::clear_interrupt();
+        TIMER0.clear_interrupt();
     }
 }
 
@@ -239,7 +244,7 @@ fn uptime() -> u64 {
     loop {
         // need to check we don't hit a timer interrupt, so read timer ticks twice
         let ticks1 = unsafe { threadx_sys::_tx_time_get() };
-        let fraction = Timer0::timer_remaining();
+        let fraction = TIMER0.timer_remaining();
         let ticks2 = unsafe { threadx_sys::_tx_time_get() };
 
         // no overflow, so calculate the total uptime
