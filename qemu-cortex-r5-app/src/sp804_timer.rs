@@ -38,6 +38,7 @@ impl<const ADDR: usize> Timer<ADDR> {
     const BASE_PTR: *mut u32 = ADDR as *mut u32;
 
     const LOAD_REGISTER: usize = 0x00 >> 2;
+    const VALUE_REGISTER: usize = 0x04 >> 2;
     const CTRL_OFFSET: usize = 0x08 >> 2;
     const ICR_OFFSET: usize = 0x0C >> 2;
     const MIS_OFFSET: usize = 0x14 >> 2;
@@ -70,6 +71,7 @@ impl<const ADDR: usize> Timer<ADDR> {
         }
     }
 
+    /// Is the interrupt pending?
     pub fn is_pending() -> bool {
         let value = unsafe { Self::BASE_PTR.add(Self::MIS_OFFSET).read_volatile() };
         (value & 1) != 0
@@ -81,6 +83,22 @@ impl<const ADDR: usize> Timer<ADDR> {
         unsafe {
             Self::BASE_PTR.add(Self::ICR_OFFSET).write_volatile(1);
         }
+    }
+
+    /// Read the timer value
+    ///
+    /// We have a count-down timer so this number goes down over time (until it resets).
+    pub fn timer_read() -> u32 {
+        unsafe { Self::BASE_PTR.add(Self::VALUE_REGISTER).read_volatile() }
+    }
+
+    /// Get the time remaining before reset
+    ///
+    /// This number goes up.
+    pub fn timer_remaining() -> u32 {
+        let reset = unsafe { Self::BASE_PTR.add(Self::LOAD_REGISTER).read_volatile() };
+        let current = unsafe { Self::BASE_PTR.add(Self::VALUE_REGISTER).read_volatile() };
+        reset.wrapping_sub(current)
     }
 }
 

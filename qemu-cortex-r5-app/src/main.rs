@@ -20,6 +20,9 @@ const TIMER_INTERRUPT: pl190_vic::InterruptId = pl190_vic::InterruptId::new(4);
 const DEMO_STACK_SIZE: usize = 16384;
 const DEMO_POOL_SIZE: usize = (DEMO_STACK_SIZE * 2) + 16384;
 
+/// The SP804 timer runs at 1 MHz, and we want 100 Hz timer ticks
+const CLOCKS_PER_TICK: u32 = 1_000_000 / 100;
+
 /// Initialise our application.
 ///
 /// ThreadX calls this function during scheduler start-up. We use it to create
@@ -176,10 +179,10 @@ pub extern "C" fn kmain() -> ! {
     // Create a UART
     let _uart0 = unsafe { Uart::new_uart0() };
 
-    // Create a timer
+    // Create the RTOS timer
     let mut timer0 = unsafe { Timer0::new_timer0() };
     timer0.init(
-        10_000,
+        CLOCKS_PER_TICK,
         sp804_timer::Mode::AutoReload,
         sp804_timer::Interrupts::Enabled,
     );
@@ -230,5 +233,22 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     defmt::info!("PANIC: {}", info);
     semihosting::process::exit(1);
 }
+
+/// Get the uptime in clock ticks
+fn uptime() -> u64 {
+    loop {
+        // need to check we don't hit a timer interrupt, so read timer ticks twice
+        let ticks1 = unsafe { threadx_sys::_tx_time_get() };
+        let fraction = Timer0::timer_remaining();
+        let ticks2 = unsafe { threadx_sys::_tx_time_get() };
+
+        // no overflow, so calculate the total uptime
+        if ticks1 == ticks2 {
+            return (u64::from(ticks1) * u64::from(CLOCKS_PER_TICK)) + u64::from(fraction);
+        }
+    }
+}
+
+defmt::timestamp!("{=u64:tus}", uptime());
 
 // End of file
